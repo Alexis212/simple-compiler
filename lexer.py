@@ -16,25 +16,26 @@ class Lexer:
     ]
 
     # M := [+-*%] ; ' ' := ' ' ^ \t
-    #    ' '  \n   0-9  a-Z   _    .    M    /    &    |    !    <>   =
-    #     0    1    2    3    4    5    6    7    8    9    10   11   12
+    #    ' '  \n   0-9  a-Z   _    .    M    /    &    |    !    <>   =    ()
+    #     0    1    2    3    4    5    6    7    8    9    10   11   12   13
     transiciones = [
-        [  0,   0,   1,   4,   4, ERR,   5,   5,   7,   9,  12,  11,  13],  #  0
-        [ACP, ACP,   1, ACP, ACP, 2,   ACP, ACP, ACP, ACP, ACP, ACP, ACP],  #  1 Entero
-        [ERR, ERR,   3, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR],  #  2 .
-        [ACP, ACP,   3, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  #  3 Decimal
-        [ACP, ACP,   4,   4,   4, ERR, ACP, ACP, ACP, ACP,  15, ACP, ACP],  #  4 Simbolo
-        [ACP, ACP, ACP, ACP, ACP, ERR, ACP,   6, ACP, ACP, ACP, ACP, ACP],  #  5 Matematico
-        [  6, ACP,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6],  #  6 Comentario
-        [ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR,   8, ERR, ERR, ERR, ERR],  #  7 &
-        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  #  8 Lógico &
-        [ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR,  10, ERR, ERR, ERR],  #  9 |
-        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  # 10 Lógico |
-        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP,  14],  # 11 Comparación <>
-        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP,  14],  # 12 Lógico !
-        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP,  14],  # 13 Asignación =
-        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  # 14 Comparación
-        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP]   # 15 Simbolo!
+        [  0,   0,   1,   4,   4, ERR,   5,   5,   7,   9,  12,  11,  13,  16],  #  0
+        [ACP, ACP,   1, ACP, ACP, 2,   ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  #  1 Entero
+        [ERR, ERR,   3, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR],  #  2 .
+        [ACP, ACP,   3, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  #  3 Decimal
+        [ACP, ACP,   4,   4,   4, ERR, ACP, ACP, ACP, ACP,  15, ACP, ACP, ACP],  #  4 Simbolo
+        [ACP, ACP, ACP, ACP, ACP, ERR, ACP,   6, ACP, ACP, ACP, ACP, ACP, ACP],  #  5 Matematico
+        [  6, ACP,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6, ACP],  #  6 Comentario
+        [ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR,   8, ERR, ERR, ERR, ERR, ERR],  #  7 &
+        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  #  8 Lógico &
+        [ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR,  10, ERR, ERR, ERR, ERR],  #  9 |
+        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  # 10 Lógico |
+        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP,  14, ACP],  # 11 Comparación <>
+        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP,  14, ACP],  # 12 Lógico !
+        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP,  14, ACP],  # 13 Asignación =
+        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  # 14 Comparación !=
+        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP]   # 15 Simbolo!
+        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP]   # 16 Par ()
     ]
 
     columnas = [
@@ -50,7 +51,8 @@ class Lexer:
         ( 9, lambda c: c == '|'),
         (10, lambda c: c == '!'),
         (11, lambda c: c in ['<', '>']),
-        (12, lambda c: c == '=')
+        (12, lambda c: c == '='),
+        (13, lambda c: c in ['(', ')', '[', ']', '{', '}'])
     ]
 
     tipos = {
@@ -68,6 +70,7 @@ class Lexer:
         12: 'Operador Lógico',
         13: 'Operador de Asignación',
         14: 'Operador de Comparación'
+        16: 'Par de delimitacion'
     }
 
     def __call__(self, entrada):
