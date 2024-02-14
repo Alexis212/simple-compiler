@@ -25,7 +25,7 @@ class Lexer:
         [ACP, ACP,   3, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  #  3 Decimal
         [ACP, ACP,   4,   4,   4, ERR, ACP, ACP, ACP, ACP,  15, ACP, ACP, ACP],  #  4 Simbolo
         [ACP, ACP, ACP, ACP, ACP, ERR, ACP,   6, ACP, ACP, ACP, ACP, ACP, ACP],  #  5 Matematico
-        [  6, ACP,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6, ACP],  #  6 Comentario
+        [  6, ACP,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6],  #  6 Comentario
         [ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR,   8, ERR, ERR, ERR, ERR, ERR],  #  7 &
         [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  #  8 Lógico &
         [ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR,  10, ERR, ERR, ERR, ERR],  #  9 |
