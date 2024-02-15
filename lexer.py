@@ -21,29 +21,29 @@ class Lexer:
     # M := [+-*%] ; ' ' := ' ' ^ \t ; D := [()\[\]{},:;]
     #     *   ' '  \n   0-9  A-z   _    !    .    M    /    "    \    <>   =    |    &    D
     #     0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16
-    # TODO: Convertir . en delimitador
-    # TODO: Cambiar 0:0 por aceptacion?
+    # TODO: Agregar simbolos especiales por aceptacion?
     # TODO: Eliminar todos los estados de error?
     transiciones = [
-        [ERR,   0,   0,   1,   4,   4,  17, ERR,   6,   6,   8, ERR,  11,  13,  15,  16,  18],  # 0
-        [ERR, ACP, ACP,   1, ACP, ERR, ERR,   2, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ACP, ACP],  # 1 Entero
+        [ 19,   0,   0,   1,   4,   4,  17,  18,   6,   6,   8, ERR,  11,  13,  15,  16,  18],  # 0
+        [ACP, ACP, ACP,   1, ACP, ERR, ERR,   2, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ACP, ACP],  # 1 Entero
         [ERR, ERR, ERR,   3, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR],  # 2
-        [ERR, ACP, ACP,   3, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ACP, ACP],  # 3 Decimal
-        [ERR, ACP, ACP,   4,   4,   4,   5, ERR, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ACP, ACP],  # 4 Simbolo
-        [ERR, ACP, ACP, ACP, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ACP, ACP],  # 5 Simbolo!
-        [ERR, ACP, ACP, ACP, ACP, ACP, ACP, ERR, ACP,   7, ACP, ERR, ACP, ACP, ACP, ACP, ACP],  # 6 Operador Matematico
+        [ACP, ACP, ACP,   3, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ACP, ACP],  # 3 Decimal
+        [ACP, ACP, ACP,   4,   4,   4,   5, ACP, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ACP, ACP],  # 4 Simbolo
+        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ACP, ACP],  # 5 Simbolo!
+        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP,   7, ACP, ERR, ACP, ACP, ACP, ACP, ACP],  # 6 Operador Matematico
         [  7,   7, ACP,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7],  # 7 Comentario //
         [  8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   9,  10,   8,   8,   8,   8,   8],  # 8
-        [ERR, ACP, ACP, ACP, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ACP, ACP],  # 9 Cadena de Texto
+        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ACP, ACP],  # 9 Cadena de Texto
         [  8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8],  # 10
-        [ERR, ACP, ACP, ACP, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ERR, ACP,  12, ACP, ACP, ACP],  # 11 Operador Relacional <>
-        [ERR, ACP, ACP, ACP, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ACP, ACP],  # 12 Operador Relacional !=
-        [ERR, ACP, ACP, ACP, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ERR, ACP,  12, ACP, ACP, ACP],  # 13 Operador de Asignación
-        [ERR, ACP, ACP, ACP, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ACP, ACP],  # 14 Operador Lógico
+        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ERR, ACP,  12, ACP, ACP, ACP],  # 11 Operador Relacional <>
+        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ACP, ACP],  # 12 Operador Relacional !=
+        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ERR, ACP,  12, ACP, ACP, ACP],  # 13 Operador de Asignación
+        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ACP, ACP],  # 14 Operador Lógico
         [ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR,  14, ERR, ACP],  # 15 |
         [ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR,  14, ACP],  # 16 &
-        [ERR, ACP, ACP, ACP, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ERR, ACP,  12, ACP, ACP, ACP],  # 17 Operador Lógico !
-        [ERR, ACP, ACP, ACP, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ACP, ACP]   # 18 Delimitador
+        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ERR, ACP,  12, ACP, ACP, ACP],  # 17 Operador Lógico !
+        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ACP, ACP],  # 18 Delimitador
+        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ERR, ACP, ACP, ACP, ACP, ACP]   # 19 Simbolo Especial
     ]
 
     columnas = [
@@ -84,7 +84,8 @@ class Lexer:
         13: 'Operador de Asignación',
         14: 'Operador Lógico',
         17: 'Operador Lógico',
-        18: 'Delimitador'
+        18: 'Delimitador',
+        19: 'Simbolo Especial'
     }
 
     def __call__(self, entrada):
@@ -102,8 +103,8 @@ class Lexer:
 
             if estado == self.ACP:
                 if estado_anterior == self.COM:
-                    tipo = self.tipos.get(estado_anterior, 'ERR_1')
-                    output.append((tipo, "###"))
+                    # tipo = self.tipos.get(estado_anterior, 'ERR_1')
+                    # output.append((tipo, "###"))
                     lexema = ""
                     estado = 0
                    
