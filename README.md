@@ -8,7 +8,7 @@ For this project I going to do a implementation of a simple language with spanis
 - [ ] Lexer Analizer
     - [x] Todos los tipos de token
     - [x] Manejo de archivos
-    - [ ] Manejo de errores
+    - [X] Manejo de errores
 - [ ] Syntax Analizer
 - [ ] Semantic Analizer
 
