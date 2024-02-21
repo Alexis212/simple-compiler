@@ -5,18 +5,15 @@ import sys
 
 class Lexer:
     """Divide el texto en tokens."""
-    ERR = -1
-
     ER1 = -1
     ER2 = -2
-    ER3 = -2
 
     ACP = 99
     SIM = [4, 5]
     COM = 7
     STR = 8
 
-    linea_archivo = 1
+    linea_archivo = 0
     columna_archivo = 0
 
     booleanos = ['verdadero', 'falso']
@@ -142,10 +139,6 @@ class Lexer:
 
                 lexema = ""
                 estado = 0
-                # idx -= 1
-                # self.columna_archivo -= 1
-
-                # return output
 
             else:
                 if estado_anterior == self.STR:
@@ -189,20 +182,33 @@ class Lexer:
         return self.default
 
 
-def main_file_simple():
+def main():
+    """Change depending if program has file input."""
+    if len(sys.argv) > 1:
+        for file in sys.argv[1:]:
+            output = tokenize_file(file)
+            print(f"### {file} ###")
+            for token in output:
+                print(f"{token[0]}: {token[1]}")
+            print()
+
+    else:
+        interactive()
+
+
+def tokenize_file(path):
     """Get a file path from console."""
     lexer = Lexer()
-    path = sys.argv[1]
 
     with open(path, 'r') as file:
         data = file.read()
 
+    data += ' '
     output = lexer(data)
-    for token in output:
-        print(f"{token[0]}: {token[1]}")
+    return output
 
 
-def main_simple():
+def interactive():
     """Simple read of user input."""
     lexer = Lexer()
 
@@ -215,10 +221,11 @@ def main_simple():
         entrada = input("| ")
 
     print()
+    output += ' '
     output = lexer(texto)
     for token in output:
         print(f"{token[0]}: {token[1]}")
 
 
 if __name__ == '__main__':
-    main_simple()
+    main()
