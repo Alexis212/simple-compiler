@@ -1,5 +1,15 @@
 """Analizador Sintactico."""
 
+def show_level(func):
+    """Print when the program enter and exit of the function."""
+    def inner_function(*args, **kwargs):
+        print(f"Enter {func.__name__}")
+        result = func(*args, **kwargs)
+        print(f"Exited {func.__name__}")
+        return result
+
+    return inner_function
+
 
 class Parser:
     def __init__(self, tokens):
@@ -19,8 +29,8 @@ class Parser:
         print(f"Error Sintactico: [{linea}:{columna}] '{lexema}'. Se esperaba '{esperado}' y recibio '{lexema}'.")
 
     # NOTE: Axioma
+    @show_level
     def programa(self):
-        print("Entro a programa")
         tipo, lexema, linea, columna = next(self.iter_tokens)
 
         while lexema in ['sea', 'fn']:
@@ -32,10 +42,8 @@ class Parser:
 
             tipo, lexema, linea, columna = next(self.iter_tokens)
 
-        print("Salio de programa")
-
+    @show_level
     def variable(self):
-        print("Entro a variable")
         tipo, lexema, linea, columna = next(self.iter_tokens)
         if lexema == "mul":
             tipo, lexema, linea, columna = next(self.iter_tokens)
@@ -68,17 +76,15 @@ class Parser:
 
         if lexema != ";":
             self.error_lexema(linea, columna, tipo, lexema, ";")
-        print("Salio de variable")
 
+    @show_level
     def tipo_variable(self):
-        print("Entro a tipo")
         tipo, lexema, linea, columna = next(self.iter_tokens)
         if lexema not in ['entero', 'decimal', 'logico', 'alfabetico']:
             self.error_tipo(linea, columna, tipo, lexema, "tipo")
-        print("Salio de tipo")
 
+    @show_level
     def valor(self):
-        print("Entro a literal")
         tipo, lexema, linea, columna = next(self.iter_tokens)
         if lexema == "{":
             tipo, lexema, linea, columna = next(self.iter_tokens)
@@ -99,10 +105,9 @@ class Parser:
         else:
             if tipo not in ['Entero', 'Decimal', 'Alfabetico', 'Logico']:
                 self.error_tipo(linea, columna, tipo, lexema, "literal")
-        print("Salio de literal")
 
+    @show_level
     def funcion(self):
-        print("Entro a funcion")
         tipo, lexema, linea, columna = next(self.iter_tokens)
         if tipo != "Identificador":
             self.error_tipo(linea, columna, tipo, lexema, "Identificador")
@@ -137,12 +142,107 @@ class Parser:
         if lexema != "{":
             self.error_lexema(linea, columna, tipo, lexema, "{")
 
-        # TODO: Sentences inside functions
-
         tipo, lexema, linea, columna = next(self.iter_tokens)
+        while lexema == 'sea' or tipo == 'Identificador':
+            if lexema == 'sea':
+                self.variable()
+
+            if tipo == 'Identificador':
+                self.asignacion()
+
+            tipo, lexema, linea, columna = next(self.iter_tokens)
+
         if lexema != "}":
             self.error_lexema(linea, columna, tipo, lexema, "}")
-        print("Salio de funcion")
 
-    def expresion():
-        pass
+    @show_level
+    def asignacion(self):
+        tipo, lexema, linea, columna = next(self.iter_tokens)
+        if lexema != '=':
+            self.error_lexema(linea, columna, tipo, lexema, "=")
+
+        self.expresion()
+
+        # FIXME: Error for missing ';' not detected
+        if lexema != ';':
+            self.error_lexema(linea, columna, tipo, lexema, ";")
+
+    # expr_0
+    @show_level
+    def expresion(self):
+        tipo, lexema, linea, columna = next(self.iter_tokens)
+        while lexema != ';':
+            self.expr_1()
+
+            tipo, lexema, linea, columna = next(self.iter_tokens)
+            if lexema != '=':
+                self.expr_1()
+                break
+
+    @show_level
+    def expr_1(self):
+        tipo, lexema, linea, columna = next(self.iter_tokens)
+        while lexema != ';':
+            self.expr_2()
+
+            tipo, lexema, linea, columna = next(self.iter_tokens)
+            if lexema not in ["&&", "||"]:
+                self.expr_2()
+                break
+
+    @show_level
+    def expr_2(self):
+        tipo, lexema, linea, columna = next(self.iter_tokens)
+        while lexema != ';':
+            self.expr_3()
+
+            tipo, lexema, linea, columna = next(self.iter_tokens)
+            if tipo != "Comparison Operator":
+                self.expr_3()
+                break
+
+    @show_level
+    def expr_3(self):
+        tipo, lexema, linea, columna = next(self.iter_tokens)
+        while lexema != ';':
+            self.expr_4()
+
+            tipo, lexema, linea, columna = next(self.iter_tokens)
+            if lexema not in ['+', '-']:
+                self.expr_4()
+                break
+
+    @show_level
+    def expr_4(self):
+        tipo, lexema, linea, columna = next(self.iter_tokens)
+        while lexema != ';':
+            self.expr_5()
+
+            tipo, lexema, linea, columna = next(self.iter_tokens)
+            if lexema not in ['*', '/', '%']:
+                self.expr_5()
+                break
+
+    @show_level
+    def expr_5(self):
+        tipo, lexema, linea, columna = next(self.iter_tokens)
+        while lexema != ';':
+            self.expr_6()
+
+            tipo, lexema, linea, columna = next(self.iter_tokens)
+            if lexema not in ['^']:
+                self.expr_6()
+                break
+
+    @show_level
+    def expr_6(self):
+        tipo, lexema, linea, columna = next(self.iter_tokens)
+        if token.lexema == '(':
+            self.expr_0()
+
+            tipo, lexema, linea, columna = next(self.iter_tokens)
+            if token.lexema != ')':
+                self.error_lexema(linea, columna, tipo, lexema, ')')
+
+        if tipo not in ["Identificador", "Entero", "Decimal", "Logico"] and lexema != ';':
+            self.error_tipo(linea, columna, tipo, lexema, 'literal')
