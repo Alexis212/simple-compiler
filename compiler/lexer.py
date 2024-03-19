@@ -1,32 +1,39 @@
 """Analizador Lexico."""
 
 
-import sys
+class Token:
+    """Estructura de tokens."""
+
+    def __init__(self, tipo, lexema):
+        self.tipo = tipo
+        self.lexema = lexema
+
+    def __repr__(self):
+        return f"<{self.tipo}: {self.lexema}>"
+
 
 class Lexer:
     """Divide el texto en tokens."""
     ER1 = -1
-    ER2 = -2
 
     ACP = 99
     SIM = [4, 5]
     COM = 7
     STR = 8
 
-    linea_archivo = 0
-    columna_archivo = 0
+    linea = 1
+    columna = 0
 
     booleanos = ['verdadero', 'falso']
     reservadas = [
         'fn', 'principal', 'imprimeln!', 'imprimeln', 'entero', 'decimal', 'logico',
         'alfabetico', 'sea', 'si', 'sino', 'para', 'en', 'mientras', 'ciclo', 'regresa',
-        'leer', 'interrumpe', 'continua'
+        'leer', 'interrumpe', 'continua', 'mut'
     ]
 
     # A^_ := A-z | _ ; M := [+-*%^] ; ' ' := ' ' | \t ; D := [()\[\]{},:;]
     #     *   ' '  \n   0-9  A^_   !    .    M    /    "    \    <>   =    |    &    D
     #     0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15
-    # TODO: Eliminar todos los estados de error?
     transiciones = [
         [ 19,   0,   0,   1,   4,  17,  20,   6,   6,   8,  19,  11,  13,  15,  16,  18],  # 0
         [ACP, ACP, ACP,   1, ACP, ACP,   2, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  # 1 Entero
@@ -41,11 +48,11 @@ class Lexer:
         [  8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8],  # 10
         [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP,  12, ACP, ACP, ACP],  # 11 Operador Relacional <>
         [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  # 12 Operador Relacional !=
-        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP,  12, ACP, ACP, ACP],  # 13 Operador de Asignación
-        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  # 14 Operador Lógico
-        [ER2, ER2, ER2, ER2, ER2, ER2, ER2, ER2, ER2, ER2, ACP, ER2, ER2,  14, ER2, ER2],  # 15 |
-        [ER2, ER2, ER2, ER2, ER2, ER2, ER2, ER2, ER2, ER2, ACP, ER2, ER2, ER2,  14, ER2],  # 16 &
-        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP,  12, ACP, ACP, ACP],  # 17 Operador Lógico !
+        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP,  12, ACP, ACP, ACP],  # 13 Operador de Asignacion
+        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  # 14 Operador Logico
+        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP,  14, ACP, ACP],  # 15 Simbolo Especial |
+        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP,  14, ACP],  # 16 Simbolo Especial &
+        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP,  12, ACP, ACP, ACP],  # 17 Operador Logico !
         [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  # 18 Delimitador
         [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  # 19 Simbolo Especial
         [ACP, ACP, ACP, ER1, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP]   # 20 Delimitador .
@@ -72,49 +79,58 @@ class Lexer:
     default = 0
     tipos = {
         # Errores
-        -1: 'decimal incompleto', 
-        -2: 'operador logico incompleto', 
-        # -3: 'backlash outside of string', 
+         -1: 'decimal incompleto', 
+         # -2: 'cadena no finalizada', 
 
         # Tipos
-         1: 'Entero',
-         3: 'Decimal',
-         6: 'Operador Matematico',
-         7: 'Comentario',
-         9: 'Cadena de texto',
-        11: 'Operador Relacional',
-        12: 'Operador Relacional',
-        13: 'Operador de Asignación',
-        14: 'Operador Lógico',
-        17: 'Operador Lógico',
-        18: 'Delimitador',
-        19: 'Simbolo Especial',
-        20: 'Delimitador',
+          1: 'Entero',
+          3: 'Decimal',
+          6: 'Operador Matematico',
+          7: 'Comentario',
+          9: 'Alfabetico',
+         11: 'Operador Relacional',
+         12: 'Operador Relacional',
+         13: 'Operador de Asignacion',
+         14: 'Operador Logico',
+         15: 'Simbolo Especial',
+         16: 'Simbolo Especial',
+         17: 'Operador Logico',
+         18: 'Delimitador',
+         19: 'Simbolo Especial',
+         20: 'Delimitador',
 
         # Simbolos
-       101: 'Palabra Reservada',
-       102: 'Booleano',
-       103: 'Identificador'
+        101: 'Palabra Reservada',
+        102: 'Logico',
+        103: 'Identificador'
     }
 
-    def __call__(self, entrada):
-        # entrada += '\n'  # Aseguramos capturar el ultimo token
+    def __init__(self, entrada):
+        self.entrada = entrada
+
+    def __iter__(self):
         output = []
         token = ''
         lexema = ""
         estado_anterior = 0
 
-        # TODO: Identificación de errores lexicos
         idx = 0
-        while idx < len(entrada):
-            token = entrada[idx]
+        while idx < len(self.entrada):
+            token = self.entrada[idx]
             col = self._obtener_columna(token)
             estado = self.transiciones[estado_anterior][col]
 
+            # Contador de lineas
+            self.columna += 1
+            if estado == self.STR or estado == self.COM or estado == 0:
+                if token == '\n':
+                    self.linea += 1
+                    self.columna = 0
+
             if estado == self.ACP:
                 if estado_anterior == self.COM:
-                    # tipo = self.tipos.get(estado_anterior, 'ERR_1')
-                    # output.append((tipo, "###"))
+                    tipo = self.tipos.get(estado_anterior, 'ERR_1')
+                    output.append((tipo, "###"))
                     lexema = ""
                     estado = 0
 
@@ -123,19 +139,19 @@ class Lexer:
                         estado_anterior = 101 if lexema in self.reservadas else 102 if lexema in self.booleanos else 103
                         
                     tipo = self.tipos.get(estado_anterior, 'ERR_1')
-                    output.append((tipo, lexema))
+                    yield tipo, lexema, self.linea, self.columna-1
                     lexema = ""
 
                     idx -= 1
-                    self.columna_archivo -= 1
+                    self.columna -= 1
                     estado = 0
 
             # All errors are negative 
             elif estado < 0:
                 lexema += token
-                output.append(('ERR_0', lexema))
+                yield tipo, lexema, self.linea, self.columna-1
                 tipo = self.tipos.get(estado, 'ERR_1')
-                print(f"[{self.linea_archivo}][{self.columna_archivo}] Error lexico, {tipo}: {lexema}")
+                print(f"[{self.linea}][{self.columna-1}] Error lexico, {tipo}: {lexema}")
 
                 lexema = ""
                 estado = 0
@@ -158,21 +174,15 @@ class Lexer:
                     if estado != self.COM and token not in [' ', '\n', '\t']:
                         lexema += token
 
-            # Contador de lineas
-            if token == '\n':
-                self.linea_archivo += 1
-                self.columna_archivo = 0
-                    
             idx += 1
-            self.columna_archivo += 1
             estado_anterior = estado
 
         # TODO: Procesar ultimo token?
         if estado_anterior == self.STR:
-            output.append(('ERR_0', lexema))
-            print(f"[{self.linea_archivo}][{self.columna_archivo}] Error lexico, cadena nunca finalizada: {lexema}")
+            yield tipo, lexema, self.linea, self.columna-1
+            print(f"[{self.linea}][{self.columna-1}] Error lexico, cadena nunca finalizada: {lexema}")
 
-        return output
+        # yield None
 
     def _obtener_columna(self, c):
         for columna in self.columnas:
@@ -180,52 +190,3 @@ class Lexer:
                 return columna[0]
 
         return self.default
-
-
-def main():
-    """Change depending if program has file input."""
-    if len(sys.argv) > 1:
-        for file in sys.argv[1:]:
-            output = tokenize_file(file)
-            print(f"### {file} ###")
-            for token in output:
-                print(f"{token[0]}: {token[1]}")
-            print()
-
-    else:
-        interactive()
-
-
-def tokenize_file(path):
-    """Get a file path from console."""
-    lexer = Lexer()
-
-    with open(path, 'r') as file:
-        data = file.read()
-
-    data += ' '
-    output = lexer(data)
-    return output
-
-
-def interactive():
-    """Simple read of user input."""
-    lexer = Lexer()
-
-    print("Escribe una entrada. Escape en linea vacia para salir:")
-    texto = ""
-    entrada = input("> ")
-    
-    while entrada != '':
-        texto += entrada + '\n'
-        entrada = input("| ")
-
-    print()
-    output += ' '
-    output = lexer(texto)
-    for token in output:
-        print(f"{token[0]}: {token[1]}")
-
-
-if __name__ == '__main__':
-    main()

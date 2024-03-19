@@ -1,0 +1,31 @@
+fn nada() {
+  fn, principal, imprimeln!, imprimeln, entero, decimal, logico,
+  alfabetico, sea, si, sino, para, en, mientras, ciclo, regresa, leer,
+  interrumpe, continua
+  "xxx"
+  4, 5678
+  42.073, 0.000089
+  67.
+  verdadero, falso
+  //#, $, ^, ¿, ¡, ?, @, |, ` ~ como comentario 
+  +-*/%
+  ||&&!
+  <><=>===!=
+  =
+    
+  {}[];().:,
+  #$¿¡@?|&`~\
+}
+
+fn principal() {
+  sea mut facto, i: entero;
+  sea num: entero;
+   
+  imprimeln!("Factorial de: ")
+  leer(num);
+  para i en 1 .. =num {
+    facto = facto * i;
+  }
+  imprimeln!("Factorial(", num, ")=", facto);
+}
+"cadena lskdfjlñsd
