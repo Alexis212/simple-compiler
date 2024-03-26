@@ -1,7 +1,14 @@
-
-fn main(arg1, arg2, arg3) -> entero
+fn main(arg1, arg2, arg3)
 {
-        sea mul w: decimal;
-        w = 2.5;
-}
+        sea mul x: entero;
+        x = 10 + 2 * 2 + 5;
 
+        si (x > 10)
+        {
+                sea mut x: entero;
+                sea y: decimal = 5.2;
+        }
+
+        // sino
+        //         sea z: logico = falso;
+}

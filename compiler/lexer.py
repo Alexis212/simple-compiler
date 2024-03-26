@@ -1,6 +1,5 @@
 """Analizador Lexico."""
 
-
 class Token:
     """Estructura de tokens."""
 
@@ -109,7 +108,6 @@ class Lexer:
         self.entrada = entrada
 
     def __iter__(self):
-        output = []
         token = ''
         lexema = ""
         estado_anterior = 0
@@ -130,7 +128,7 @@ class Lexer:
             if estado == self.ACP:
                 if estado_anterior == self.COM:
                     tipo = self.tipos.get(estado_anterior, 'ERR_1')
-                    output.append((tipo, "###"))
+                    # yield tipo, lexema, self.linea, self.columna-1
                     lexema = ""
                     estado = 0
 
@@ -190,3 +188,11 @@ class Lexer:
                 return columna[0]
 
         return self.default
+
+
+if __name__ == '__main__':
+    text = "fn principal(arg1, arg2, arg3) { sea mul x: entero; x = (2)*(4-10); }\n"
+    lexer = Lexer(text)
+
+    for tipo, lexema, linea, columna in lexer:
+        print(f"[{linea}:{columna}] Tipo: {tipo}, Lexema: {lexema}")

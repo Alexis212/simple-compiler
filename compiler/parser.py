@@ -1,5 +1,6 @@
 """Analizador Sintactico."""
 
+
 def show_level(func):
     """Print when the program enter and exit of the function."""
     def inner_function(*args, **kwargs):
@@ -13,7 +14,15 @@ def show_level(func):
 
 class Parser:
     def __init__(self, tokens):
-        self.iter_tokens = iter(tokens)
+        self.lexer = iter(tokens)
+
+        self.tipo = ''
+        self.lexema = ''
+        self.linea = -1
+        self.columna = -1
+
+        self.simbolos = {}
+        self.codigo = [[]]  # TODO
 
     def __call__(self):
         try:
@@ -22,227 +31,312 @@ class Parser:
         except StopIteration:
             print("Compilacion finalizada.")
 
-    def error_tipo(self, linea, columna, tipo, lexema, esperado):
-        print(f"Error Sintactico: [{linea}:{columna}] '{lexema}'. Se esperaba un {esperado} y recibio un {tipo}.")
+    def error_tipo(self, esperado):
+        print(f"Error Sintactico: [{self.linea}:{self.columna}] '{self.lexema}'. Se esperaba un {esperado} y recibio un {self.tipo}.")
 
-    def error_lexema(self, linea, columna, tipo, lexema, esperado):
-        print(f"Error Sintactico: [{linea}:{columna}] '{lexema}'. Se esperaba '{esperado}' y recibio '{lexema}'.")
+    def error_lexema(self, esperado):
+        print(f"Error Sintactico: [{self.linea}:{self.columna}] '{self.lexema}'. Se esperaba '{esperado}' y recibio '{self.lexema}'.")
+
+    def next_token(self):
+        self.tipo, self.lexema, self.linea, self.columna = next(self.lexer)
+        print(f"[{self.tipo}:{self.lexema}]")
 
     # NOTE: Axioma
     @show_level
     def programa(self):
-        tipo, lexema, linea, columna = next(self.iter_tokens)
+        self.next_token()
 
-        while lexema in ['sea', 'fn']:
-            if lexema == 'sea':
-                self.variable()
+        while self.lexema in ['sea', 'fn'] \
+              or self.tipo in ["Identificador"]:
+            if self.lexema == 'sea':
+                self.definicion()
 
-            if lexema == 'fn':
+            if self.lexema == 'fn':
                 self.funcion()
 
-            tipo, lexema, linea, columna = next(self.iter_tokens)
+            if self.tipo == "Identificador":
+                self.asignacion()
+
+            self.next_token()
 
     @show_level
-    def variable(self):
-        tipo, lexema, linea, columna = next(self.iter_tokens)
-        if lexema == "mul":
-            tipo, lexema, linea, columna = next(self.iter_tokens)
+    def bloque(self):
+        self.next_token()
+        while self.lexema in ['sea', 'si'] \
+              or self.tipo == 'Identificador':
+            self.sentencia()
 
-        if tipo != "Identificador":
-            self.error_tipo(linea, columna, tipo, lexema, "Identificador")
+    @show_level
+    def sentencia(self):
+        if self.lexema == 'sea':
+            self.definicion()
+            self.next_token()
 
-        tipo, lexema, linea, columna = next(self.iter_tokens)
-        if lexema == "[":
-            tipo, lexema, linea, columna = next(self.iter_tokens)
-            if tipo not in ['Entero', 'Identificador']:
-                self.error_tipo(linea, columna, tipo, lexema, "Identificador o Entero")
+        if self.lexema == 'si':
+            self.si_sino()
+            
+        if self.tipo == 'Identificador':
+            self.asignacion()
+            self.next_token()
 
-            tipo, lexema, linea, columna = next(self.iter_tokens)
-            if lexema == "]":
-                tipo, lexema, linea, columna = next(self.iter_tokens)
+    @show_level
+    def definicion(self):
+        self.next_token()
+        if self.lexema == "mut":
+            self.next_token()
+
+        if self.tipo != "Identificador":
+            self.error_tipo("Identificador")
+
+        self.next_token()
+        if self.lexema == "[":
+            self.next_token()
+            if self.tipo not in ['Entero', 'Identificador']:
+                self.error_tipo("Identificador o Entero")
+
+            self.next_token()
+            if self.lexema == "]":
+                self.next_token()
 
             else:
-                self.error_lexema(linea, columna, tipo, lexema, "]")
+                self.error_lexema("]")
 
-        if lexema != ":":
-            self.error_lexema(linea, columna, tipo, lexema, ":")
+        if self.lexema != ":":
+            self.error_lexema(":")
 
         self.tipo_variable()
 
-        tipo, lexema, linea, columna = next(self.iter_tokens)
-        if lexema == "=":
+        self.next_token()
+        if self.lexema == "=":
             self.valor()
-            tipo, lexema, linea, columna = next(self.iter_tokens)
+            self.next_token()
 
-        if lexema != ";":
-            self.error_lexema(linea, columna, tipo, lexema, ";")
+        if self.lexema != ";":
+            self.error_lexema(";")
 
     @show_level
     def tipo_variable(self):
-        tipo, lexema, linea, columna = next(self.iter_tokens)
-        if lexema not in ['entero', 'decimal', 'logico', 'alfabetico']:
-            self.error_tipo(linea, columna, tipo, lexema, "tipo")
+        self.next_token()
+        if self.lexema not in ['entero', 'decimal', 'logico', 'alfabetico']:
+            self.error_tipo("Tipo")
 
     @show_level
     def valor(self):
-        tipo, lexema, linea, columna = next(self.iter_tokens)
-        if lexema == "{":
-            tipo, lexema, linea, columna = next(self.iter_tokens)
+        self.next_token()
+        if self.lexema == "{":
+            self.next_token()
+            if self.tipo not in ['Entero', 'Decimal', 'Alfabetico', 'Logico']:
+                self.error_lexema("Literal")
 
-            if tipo not in ['Entero', 'Decimal', 'Alfabetico', 'Logico']:
-                self.error_lexema(linea, columna, tipo, lexema, "tipo")
+            self.next_token()
+            while self.lexema == ",":
+                self.next_token()
+                if self.tipo not in ['Entero', 'Decimal', 'Alfabetico', 'Logico']:
+                    self.error_lexema("Literal")
+                self.next_token()
 
-            tipo, lexema, linea, columna = next(self.iter_tokens)
-            while lexema == ",":
-                tipo, lexema, linea, columna = next(self.iter_tokens)
-                if tipo not in ['Entero', 'Decimal', 'Alfabetico', 'Logico']:
-                    self.error_lexema(linea, columna, tipo, lexema, "tipo")
-                tipo, lexema, linea, columna = next(self.iter_tokens)
-
-            if lexema != "}":
-                self.error_lexema(linea, columna, tipo, lexema, "}")
+            if self.lexema != "}":
+                self.error_lexema("}")
 
         else:
-            if tipo not in ['Entero', 'Decimal', 'Alfabetico', 'Logico']:
-                self.error_tipo(linea, columna, tipo, lexema, "literal")
+            if self.tipo not in ['Entero', 'Decimal', 'Alfabetico', 'Logico']:
+                self.error_tipo("literal")
 
     @show_level
     def funcion(self):
-        tipo, lexema, linea, columna = next(self.iter_tokens)
-        if tipo != "Identificador":
-            self.error_tipo(linea, columna, tipo, lexema, "Identificador")
+        self.next_token()
+        if self.tipo != "Identificador" and self.lexema != "principal":
+                self.error_tipo("Identificador")
 
-        tipo, lexema, linea, columna = next(self.iter_tokens)
-        if lexema != "(":
-            self.error_lexema(linea, columna, tipo, lexema, "(")
+        self.next_token()
+        if self.lexema != "(":
+            self.error_lexema("(")
 
-        tipo, lexema, linea, columna = next(self.iter_tokens)
-        if tipo == "Identificador":
-            tipo, lexema, linea, columna = next(self.iter_tokens)
-            while lexema == ",":
-                tipo, lexema, linea, columna = next(self.iter_tokens)
-                if tipo != "Identificador":
-                    self.error_lexema(linea, columna, tipo, lexema, "tipo")
-                tipo, lexema, linea, columna = next(self.iter_tokens)
+        self.next_token()
+        if self.tipo == "Identificador":
+            self.next_token()
+            if self.lexema != ':':
+                self.error_lexema(':')
 
-        if lexema != ")":
-            self.error_lexema(linea, columna, tipo, lexema, ")")
+            self.tipo_variable()
 
-        tipo, lexema, linea, columna = next(self.iter_tokens)
-        if lexema != "-":
-            self.error_lexema(linea, columna, tipo, lexema, "-")
+            self.next_token()
+            while self.lexema == ",":
+                self.next_token()
+                if self.tipo != "Identificador":
+                    self.error_lexema("self.tipo")
 
-        tipo, lexema, linea, columna = next(self.iter_tokens)
-        if lexema != ">":
-            self.error_lexema(linea, columna, tipo, lexema, ">")
+                self.next_token()
+                if self.lexema != ':':
+                    self.error_lexema(':')
 
-        self.tipo_variable()
+                self.tipo_variable()
+                self.next_token()
 
-        tipo, lexema, linea, columna = next(self.iter_tokens)
-        if lexema != "{":
-            self.error_lexema(linea, columna, tipo, lexema, "{")
+        if self.lexema != ")":
+            self.error_lexema(")")
 
-        tipo, lexema, linea, columna = next(self.iter_tokens)
-        while lexema == 'sea' or tipo == 'Identificador':
-            if lexema == 'sea':
-                self.variable()
+        self.next_token()
+        if self.lexema == "-":
+            self.next_token()
+            if self.lexema != ">":
+                self.error_lexema(">")
 
-            if tipo == 'Identificador':
-                self.asignacion()
+            self.tipo_variable()
+            self.next_token()
 
-            tipo, lexema, linea, columna = next(self.iter_tokens)
+        if self.lexema != "{":
+            self.error_lexema("{")
 
-        if lexema != "}":
-            self.error_lexema(linea, columna, tipo, lexema, "}")
+        self.bloque()
 
+        if self.lexema != "}":
+            self.error_lexema("}")
+
+    # TODO: Estructuras de control
+    # TODO: si, para, mientras
     @show_level
-    def asignacion(self):
-        tipo, lexema, linea, columna = next(self.iter_tokens)
-        if lexema != '=':
-            self.error_lexema(linea, columna, tipo, lexema, "=")
+    def si_sino(self):
+        self.next_token()
+        if self.lexema != '(':
+            self.error_lexema('(')
 
         self.expresion()
 
-        # FIXME: Error for missing ';' not detected
-        if lexema != ';':
-            self.error_lexema(linea, columna, tipo, lexema, ";")
+        if self.lexema != ')':
+            self.error_lexema(')')
+
+        self.next_token()
+        if self.lexema == '{':
+            self.bloque()
+
+            if self.lexema != '}':
+                self.error_lexema('}')
+
+        else:
+            self.sentencia()
+
+        # temp = True
+        # while temp:
+        #     if self.lexema != 'sino':
+        #         break
+
+        #     self.next_token()
+        #     if self.lexema != 'si':
+        #         temp = False
+        #         self.next_token()
+
+        #         # if self.lexema != '(':
+        #         #     self.error_lexema('(')
+       
+        #         # self.expresion()
+       
+        #         # if self.lexema != ')':
+        #         #     self.error_lexema(')')
+
+        #         self.next_token()
+
+        #     if self.lexema == '{':
+        #         self.bloque()
+
+        #         if self.lexema != '}':
+        #             self.error_lexema('}')
+
+        #     else:
+        #         self.sentencia()
 
     # expr_0
     @show_level
-    def expresion(self):
-        tipo, lexema, linea, columna = next(self.iter_tokens)
-        while lexema != ';':
-            self.expr_1()
+    def asignacion(self):
+        self.next_token()
+        if self.lexema == '[':
+            self.next_token()
+            if self.tipo not in ["Identificador", "Entero"]:
+                self.error_tipo("Identificador o Entero")
 
-            tipo, lexema, linea, columna = next(self.iter_tokens)
-            if lexema != '=':
-                self.expr_1()
-                break
+            self.next_token()
+            if self.lexema != "]":
+                self.error_lexema("]")
 
+            self.next_token()
+
+        if self.lexema != '=':
+            self.error_lexema("=")
+
+        self.expresion()
+
+        if self.lexema != ';':
+            self.error_lexema(";")
+
+    # expr_1
     @show_level
-    def expr_1(self):
-        tipo, lexema, linea, columna = next(self.iter_tokens)
-        while lexema != ';':
+    def expresion(self):
+        while self.lexema != ';':
             self.expr_2()
 
-            tipo, lexema, linea, columna = next(self.iter_tokens)
-            if lexema not in ["&&", "||"]:
-                self.expr_2()
+            if self.lexema not in ["&&", "||"]:
                 break
 
+    # expr_2
     @show_level
     def expr_2(self):
-        tipo, lexema, linea, columna = next(self.iter_tokens)
-        while lexema != ';':
+        while self.lexema != ';':
             self.expr_3()
 
-            tipo, lexema, linea, columna = next(self.iter_tokens)
-            if tipo != "Comparison Operator":
-                self.expr_3()
+            if self.tipo != "Operador Relacional":
                 break
 
+    # expr_3
     @show_level
     def expr_3(self):
-        tipo, lexema, linea, columna = next(self.iter_tokens)
-        while lexema != ';':
+        while self.lexema != ';':
             self.expr_4()
 
-            tipo, lexema, linea, columna = next(self.iter_tokens)
-            if lexema not in ['+', '-']:
-                self.expr_4()
+            if self.lexema not in ['+', '-']:
                 break
 
+    # expr_4
     @show_level
     def expr_4(self):
-        tipo, lexema, linea, columna = next(self.iter_tokens)
-        while lexema != ';':
+        while self.lexema != ';':
             self.expr_5()
 
-            tipo, lexema, linea, columna = next(self.iter_tokens)
-            if lexema not in ['*', '/', '%']:
-                self.expr_5()
+            if self.lexema not in ['*', '/', '%']:
                 break
 
+    # expr_5
     @show_level
     def expr_5(self):
-        tipo, lexema, linea, columna = next(self.iter_tokens)
-        while lexema != ';':
-            self.expr_6()
+        while self.lexema != ';':
+            self.term()
 
-            tipo, lexema, linea, columna = next(self.iter_tokens)
-            if lexema not in ['^']:
-                self.expr_6()
+            if self.lexema not in ['^']:
                 break
 
+    # expr_6
     @show_level
-    def expr_6(self):
-        tipo, lexema, linea, columna = next(self.iter_tokens)
-        if token.lexema == '(':
-            self.expr_0()
+    def term(self):
+        self.next_token()
+        if self.lexema in ['!', '-']:
+            self.next_token()
 
-            tipo, lexema, linea, columna = next(self.iter_tokens)
-            if token.lexema != ')':
-                self.error_lexema(linea, columna, tipo, lexema, ')')
+        if self.lexema == '(':
+            self.expresion()
 
-        if tipo not in ["Identificador", "Entero", "Decimal", "Logico"] and lexema != ';':
-            self.error_tipo(linea, columna, tipo, lexema, 'literal')
+            if self.lexema != ')':
+                self.error_lexema(')')
+
+        if self.tipo not in ["Identificador", "Entero", "Decimal", "Logico"] \
+           and self.lexema != ';' and self.lexema != ')':
+            self.error_tipo('literal')
+
+        self.next_token()
+
+
+if __name__ == '__main__':
+    from lexer import Lexer
+
+    text = "fn principal(arg1: entero, arg2: decimal) { sea mul x: entero; x = 10; si (arg1 > x) x = arg1 / arg2; }\n"
+    lexer = Lexer(text)
+    parser = Parser(lexer)
+    parser()
