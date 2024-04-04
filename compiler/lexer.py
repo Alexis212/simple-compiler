@@ -27,7 +27,7 @@ class Lexer:
     reservadas = [
         'fn', 'principal', 'imprimeln!', 'imprimeln', 'entero', 'decimal', 'logico',
         'alfabetico', 'sea', 'si', 'sino', 'para', 'en', 'mientras', 'ciclo', 'regresa',
-        'leer', 'interrumpe', 'continua', 'mut'
+        'leer', 'interrumpe', 'continua', 'mut', 'inc', 'dec'
     ]
 
     # A^_ := A-z | _ ; M := [+-*%^] ; ' ' := ' ' | \t ; D := [()\[\]{},:;]
@@ -36,7 +36,7 @@ class Lexer:
     transiciones = [
         [ 19,   0,   0,   1,   4,  17,  20,   6,   6,   8,  19,  11,  13,  15,  16,  18],  # 0
         [ACP, ACP, ACP,   1, ACP, ACP,   2, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  # 1 Entero
-        [ER1, ER1, ER1,   3, ER1, ER1, ER1, ER1, ER1, ER1, ER1, ER1, ER1, ER1, ER1, ER1],  # 2
+        [ER1, ER1, ER1,   3, ER1, ER1, ACP, ER1, ER1, ER1, ER1, ER1, ER1, ER1, ER1, ER1],  # 2
         [ACP, ACP, ACP,   3, ACP, ACP, ER1, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  # 3 Decimal
         [ACP, ACP, ACP,   4,   4,   5, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  # 4 Simbolo
         [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  # 5 Simbolo!
@@ -54,7 +54,7 @@ class Lexer:
         [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP,  12, ACP, ACP, ACP],  # 17 Operador Logico !
         [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  # 18 Delimitador
         [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  # 19 Simbolo Especial
-        [ACP, ACP, ACP, ER1, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP]   # 20 Delimitador .
+        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP]   # 20 Delimitador .
     ]
 
     columnas = [
@@ -79,7 +79,7 @@ class Lexer:
     tipos = {
         # Errores
          -1: 'decimal incompleto', 
-         # -2: 'cadena no finalizada', 
+       # -2: 'cadena no finalizada', 
 
         # Tipos
           1: 'Entero',
@@ -132,6 +132,15 @@ class Lexer:
                     lexema = ""
                     estado = 0
 
+                if estado_anterior == 2:
+                    yield 'Entero', lexema[:-1], self.linea, self.columna-1 
+                    yield 'Delimitador', '.', self.linea, self.columna-1 
+                    lexema = ""
+
+                    idx -= 1
+                    self.columna -= 1
+                    estado = 0
+
                 else:
                     if estado_anterior in self.SIM:
                         estado_anterior = 101 if lexema in self.reservadas else 102 if lexema in self.booleanos else 103
@@ -144,9 +153,10 @@ class Lexer:
                     self.columna -= 1
                     estado = 0
 
-            # All errors are negative 
+            # All error states are negative 
             elif estado < 0:
                 lexema += token
+                tipo = self.tipos.get(estado_anterior, 'ERR_1')
                 yield tipo, lexema, self.linea, self.columna-1
                 tipo = self.tipos.get(estado, 'ERR_1')
                 print(f"[{self.linea}][{self.columna-1}] Error lexico, {tipo}: {lexema}")
@@ -177,6 +187,7 @@ class Lexer:
 
         # TODO: Procesar ultimo token?
         if estado_anterior == self.STR:
+            tipo = self.tipos.get(estado_anterior, 'ERR_1')
             yield tipo, lexema, self.linea, self.columna-1
             print(f"[{self.linea}][{self.columna-1}] Error lexico, cadena nunca finalizada: {lexema}")
 
@@ -191,8 +202,8 @@ class Lexer:
 
 
 if __name__ == '__main__':
-    text = "fn principal(arg1, arg2, arg3) { sea mul x: entero; x = (2)*(4-10); }\n"
+    text = "1..10 "
     lexer = Lexer(text)
 
     for tipo, lexema, linea, columna in lexer:
-        print(f"[{linea}:{columna}] Tipo: {tipo}, Lexema: {lexema}")
+        print(f"[{tipo}:{lexema}]")

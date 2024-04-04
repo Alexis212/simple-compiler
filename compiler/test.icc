@@ -1,14 +1,9 @@
-fn main(arg1, arg2, arg3)
+fn main(arg1: entero, arg2: entero, arg3: entero)
 {
-        sea mul x: entero;
-        x = 10 + 2 * 2 + 5;
+        sea mut x: entero = 1;
 
-        si (x > 10)
+        para x en 1..20 inc
         {
-                sea mut x: entero;
-                sea y: decimal = 5.2;
+                x = x + 1;
         }
-
-        // sino
-        //         sea z: logico = falso;
 }
