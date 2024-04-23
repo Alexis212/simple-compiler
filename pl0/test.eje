@@ -1,8 +1,10 @@
-cadena,V,A,0,0,#,
+xs,V,E,0,0,#,
+_principal,F,I,4,0,#,
 _P,I,I,1,0,#,
 @
-1 LIT "Hola Mundo!", 0
-2 STO 0, cadena
-3 LOD cadena, 0
-4 OPR 0, 21
-5 OPR 0, 0
+1 LIT 3, 0
+2 STO 0, xs
+3 JMP 0, _principal
+4 LOD xs, 0
+5 OPR 0, 21
+6 OPR 0, 0

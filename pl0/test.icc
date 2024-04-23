@@ -1,4 +1,7 @@
-fn main()
+sea x: entero = 3;
+sea mut xs[x]: entero = {1, 2, 3};
+
+fn principal()
 {
-        imprimeln!("Hola Mundo");
+        imprimeln!(xs);
 }

@@ -11,7 +11,8 @@ def main():
         tokenize_all_files()
 
     else:
-        interactive()
+        print("SCRIPT ERROR: No input files")
+        exit()
 
 
 def tokenize_all_files():
@@ -33,23 +34,6 @@ def tokenize_file(path):
     data += ' '
     lexer = Lexer(data)
     return lexer
-
-
-def interactive():
-    """Simple read of user input."""
-    print("Escribe una entrada. Escape en linea vacia para salir:")
-    texto = ""
-    entrada = input("> ")
-    
-    while entrada != '':
-        texto += entrada + '\n'
-        entrada = input("| ")
-
-    print()
-    texto += ' '
-    lexer = Lexer(texto)
-    for token in lexer:
-        print(f"[{token[2]}:{token[3]}] {token[0]}: {token[1]}")
 
 
 if __name__ == '__main__':

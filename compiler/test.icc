@@ -1,16 +1,5 @@
-fn main()
+fn principal()
 {
-        sea vec[2]: entero = {3, 10};
-        sea mut max: entero;
-        
-        si (a > b)
-        {
-                max = a;
-        }
-        sino
-        {
-                max = b;
-        }
-
-        imprimeln(max);
+        sea a: entero = 10;
+        sea b: decimal = 3.14;
 }

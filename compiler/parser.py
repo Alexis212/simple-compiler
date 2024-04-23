@@ -32,6 +32,7 @@ class Parser:
         self.columna = -1
 
         self.mapa_simbolos = {}
+        self.codigo = []
 
     def __call__(self):
         try:
@@ -39,6 +40,8 @@ class Parser:
 
         except StopIteration:
             print("Compilacion finalizada.")
+            print(self.mapa_simbolos)
+            print(self.codigo)
 
     def error_tipo(self, esperado):
         print(f"Error Sintactico: [{self.linea}:{self.columna}] '{self.lexema}'. Se esperaba un {esperado} y recibio un {self.tipo}.")
@@ -50,6 +53,10 @@ class Parser:
         self.tipo, self.lexema, self.linea, self.columna = next(self.lexer)
         print(f"[{self.tipo}:{self.lexema}]")
 
+    def add_var(self, var, value):
+        self.codigo.append(f"LIT {value}, 0")
+        self.codigo.append(f"STO 0, {var}")
+
     # NOTE: Axioma
     @show_level
     def programa(self):
@@ -58,7 +65,7 @@ class Parser:
         while self.lexema in ['sea', 'fn'] \
               or self.tipo in ["Identificador"]:
             if self.lexema == 'sea':
-                self.definicion()
+                self.declaracion()
 
             if self.lexema == 'fn':
                 self.funcion()
@@ -72,14 +79,14 @@ class Parser:
     @show_level
     def bloque(self):
         self.next_token()
-        while self.lexema in ['sea', 'si'] or self.tipo == 'Identificador' \
-              or self.lexema == "imprimeln" or self.lexema == "imprimeln!":
+        while self.lexema in ['sea', 'si'] or self.tipo == 'Identificador' or self.lexema == 'tpm' \
+              or self.lexema == "imprimeln" or self.lexema == "imprimeln!" or self.lexema == 'leer':
             self.sentencia()
 
     @show_level
     def sentencia(self):
         if self.lexema == 'sea':
-            self.definicion()
+            self.declaracion()
             self.next_token()
 
         if self.lexema == 'si':
@@ -90,6 +97,13 @@ class Parser:
 
         if self.lexema == 'para':
             self.para()
+
+        if self.lexema == 'tpm':
+            if self.lexema != ';':
+                self.error_lexema(';')
+
+            else:
+                self.codigo.append("OPR 0, 18 w")
             
         if self.tipo == 'Identificador' or self.lexema == "imprimeln!" \
            or self.lexema == "imprimeln":
@@ -121,9 +135,9 @@ class Parser:
             self.next_token()
 
     @show_level
-    def definicion(self):
+    def declaracion(self):
         simbolo = []
-        id = "ERROR"
+        id = ""
         value = ''
 
         self.next_token()
@@ -171,7 +185,10 @@ class Parser:
 
         else:
             simbolo.append(0)
-            self.mapa_simbolos[id] = simbolo
+            self.add_var(id, value)
+
+            if id != '':
+                self.mapa_simbolos[id] = simbolo
 
     @show_level
     def tipo_variable(self):
@@ -520,7 +537,7 @@ class Parser:
 if __name__ == '__main__':
     from lexer import Lexer
 
-    text = 'fn principal(arg1: entero, arg2: decimal) { sea x: entero = 0; sea y[3]: entero = {1, 2, 3}; sea w: decimal = 4.5; sea z: alfabetico = "a"; }\n'
+    text = 'fn principal() { sea x: entero = 0; sea y[3]: entero = {1, 2, 3}; sea w: decimal = 4.5; sea z: alfabetico = "a"; }\n'
     lexer = Lexer(text)
     parser = Parser(lexer)
     parser()
