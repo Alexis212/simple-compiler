@@ -1,9 +1,16 @@
-fn main(arg1: entero, arg2: entero, arg3: entero)
+fn main()
 {
-        sea mut x: entero = 1;
-
-        para x en 1..20 inc
+        sea vec[2]: entero = {3, 10};
+        sea mut max: entero;
+        
+        si (a > b)
         {
-                x = x + 1;
+                max = a;
         }
+        sino
+        {
+                max = b;
+        }
+
+        imprimeln(max);
 }

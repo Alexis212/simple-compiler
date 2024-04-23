@@ -4,14 +4,16 @@
 def show_level(func):
     """Print when the program enter and exit of the function."""
     def inner_function(*args, **kwargs):
-        # print(f"Enter {func.__name__}")
+        print(f"Enter {func.__name__}")
         result = func(*args, **kwargs)
-        # print(f"Exited {func.__name__}")
+        print(f"Exited {func.__name__}")
         return result
 
     return inner_function
 
 
+# TODO: Add tpm;
+# TODO: Add leer(x)
 class Parser:
     """Valida el orden de los tokens (comprueba la gramatica).
     Simbolos: Diccionario de variables y valores.
@@ -29,8 +31,7 @@ class Parser:
         self.linea = -1
         self.columna = -1
 
-        self.simbolos = {}
-        self.codigo = []
+        self.mapa_simbolos = {}
 
     def __call__(self):
         try:
@@ -47,10 +48,10 @@ class Parser:
 
     def next_token(self):
         self.tipo, self.lexema, self.linea, self.columna = next(self.lexer)
-        # print(f"[{self.tipo}:{self.lexema}]")
+        print(f"[{self.tipo}:{self.lexema}]")
 
     # NOTE: Axioma
-    # @show_level
+    @show_level
     def programa(self):
         self.next_token()
 
@@ -63,18 +64,19 @@ class Parser:
                 self.funcion()
 
             if self.tipo == "Identificador":
+                self.next_token()
                 self.asignacion()
 
             self.next_token()
 
-    # @show_level
+    @show_level
     def bloque(self):
         self.next_token()
-        while self.lexema in ['sea', 'si'] \
-              or self.tipo == 'Identificador':
+        while self.lexema in ['sea', 'si'] or self.tipo == 'Identificador' \
+              or self.lexema == "imprimeln" or self.lexema == "imprimeln!":
             self.sentencia()
 
-    # @show_level
+    @show_level
     def sentencia(self):
         if self.lexema == 'sea':
             self.definicion()
@@ -89,11 +91,36 @@ class Parser:
         if self.lexema == 'para':
             self.para()
             
-        if self.tipo == 'Identificador':
-            self.asignacion()
+        if self.tipo == 'Identificador' or self.lexema == "imprimeln!" \
+           or self.lexema == "imprimeln":
             self.next_token()
 
-    # @show_level
+            if self.lexema == '=' or self.lexema == '[':
+                self.asignacion()
+
+            if self.lexema == '(':
+                self.next_token()
+                if self.tipo in ["Entero", "Decimal", "Logico", "Alfabetico", "Identificador"]:
+                    self.next_token()
+
+                    while self.lexema == ",":
+                        self.next_token()
+
+                        if self.tipo not in ["Entero", "Decimal", "Logico", "Alfabetico", "Identificador"]:
+                            self.error_tipo("literal o identificador")
+
+                        self.next_token()
+
+                if self.lexema != ")":
+                   self.error_lexema(")")
+
+                self.next_token()
+                if self.lexema != ";":
+                   self.error_lexema(";")
+
+            self.next_token()
+
+    @show_level
     def definicion(self):
         simbolo = []
         id = "ERROR"
@@ -115,11 +142,8 @@ class Parser:
 
         self.next_token()
         if self.lexema == "[":
-            self.next_token()
-            if self.tipo not in ['Entero', 'Identificador']:
-                self.error_tipo("Identificador o Entero")
+            self.expresion()
 
-            self.next_token()
             if self.lexema == "]":
                 self.next_token()
 
@@ -146,17 +170,16 @@ class Parser:
             self.error_lexema(";")
 
         else:
-            self.simbolos[id] = value
             simbolo.append(0)
-            self.codigo.insert(0, simbolo)
+            self.mapa_simbolos[id] = simbolo
 
-    # @show_level
+    @show_level
     def tipo_variable(self):
         self.next_token()
         if self.lexema not in ['entero', 'decimal', 'logico', 'alfabetico']:
             self.error_tipo("Tipo")
 
-    # @show_level
+    @show_level
     def valor(self):
         self.next_token()
         if self.lexema == "{":
@@ -192,7 +215,7 @@ class Parser:
             else:
                 return self.lexema
 
-    # @show_level
+    @show_level
     def funcion(self):
         func = []
         func.append('F')
@@ -201,12 +224,14 @@ class Parser:
         if self.tipo != "Identificador" and self.lexema != "principal":
                 self.error_tipo("Identificador")
 
+        func_id = self.lexema
         self.next_token()
         if self.lexema != "(":
             self.error_lexema("(")
 
         self.next_token()
         if self.tipo == "Identificador":
+            id = self.lexema
             argumento = []
             argumento.append('R')
 
@@ -215,11 +240,13 @@ class Parser:
                 self.error_lexema(':')
 
             self.tipo_variable()
-            argumento.append( self.tipo_var[self.lexema] )
-            argumento.append(1)
+            arg_type = self.tipo_var[self.lexema]
+            func_id += f"${arg_type}"
+            argumento.append(arg_type)
+            argumento.append(0)
             argumento.append(0)
 
-            self.codigo.insert(0, argumento)
+            self.mapa_simbolos[id] = argumento
             self.next_token()
             while self.lexema == ",":
                 argumento = []
@@ -229,16 +256,19 @@ class Parser:
                 if self.tipo != "Identificador":
                     self.error_lexema("self.tipo")
 
+                id = self.lexema
                 self.next_token()
                 if self.lexema != ':':
                     self.error_lexema(':')
 
                 self.tipo_variable()
-                argumento.append( self.tipo_var[self.lexema] )
-                argumento.append(1)
+                arg_type = self.tipo_var[self.lexema]
+                func_id += f"${arg_type}"
+                argumento.append(arg_type)
+                argumento.append(0)
                 argumento.append(0)
 
-                self.codigo.insert(0, argumento)
+                self.mapa_simbolos[id] = argumento
                 self.next_token()
 
         if self.lexema != ")":
@@ -251,10 +281,12 @@ class Parser:
                 self.error_lexema(">")
 
             self.tipo_variable()
+            func_id += f"${self.tipo_var[self.lexema]}"
             func.append( self.tipo_var[self.lexema] )
             self.next_token()
 
         else:
+            func_id += f"$I"
             func.append('I')
 
         if self.lexema != "{":
@@ -268,10 +300,10 @@ class Parser:
         else:
             func.append(0)
             func.append(0)
-            self.codigo.insert(0, func)
+            self.mapa_simbolos[func_id] = func
 
     # TODO: Probar para
-    # @show_level
+    @show_level
     def para(self):
         self.next_token()
         if self.tipo != 'Identificador':
@@ -315,7 +347,7 @@ class Parser:
         else:
             self.sentencia()
 
-    # @show_level
+    @show_level
     def mientras(self):
         self.next_token()
 
@@ -339,7 +371,7 @@ class Parser:
         else:
             self.sentencia()
 
-    # @show_level
+    @show_level
     def si_sino(self):
         self.next_token()
         if self.lexema != '(':
@@ -376,10 +408,9 @@ class Parser:
             else:
                 self.sentencia()
 
-    # expr_0
-    # @show_level
+    # expr_-1
+    @show_level
     def asignacion(self):
-        self.next_token()
         if self.lexema == '[':
             self.next_token()
             if self.tipo not in ["Identificador", "Entero"]:
@@ -391,6 +422,10 @@ class Parser:
 
             self.next_token()
 
+        # TODO: Asignacion multiple 
+        # while self.lexema == ',':
+        #     pass
+
         if self.lexema != '=':
             self.error_lexema("=")
 
@@ -400,52 +435,52 @@ class Parser:
             self.error_lexema(";")
 
     # expr_1
-    # @show_level
+    @show_level
     def expresion(self):
-        while self.lexema != ';':
+        while self.lexema not in ';,)]':
             self.expr_2()
 
             if self.lexema not in ["&&", "||"]:
                 break
 
     # expr_2
-    # @show_level
+    @show_level
     def expr_2(self):
-        while self.lexema != ';':
+        while self.lexema not in ';,)]':
             self.expr_3()
 
             if self.tipo != "Operador Relacional":
                 break
 
     # expr_3
-    # @show_level
+    @show_level
     def expr_3(self):
-        while self.lexema != ';':
+        while self.lexema not in ';,)]':
             self.expr_4()
 
             if self.lexema not in ['+', '-']:
                 break
 
     # expr_4
-    # @show_level
+    @show_level
     def expr_4(self):
-        while self.lexema != ';':
+        while self.lexema not in ';,)]':
             self.expr_5()
 
             if self.lexema not in ['*', '/', '%']:
                 break
 
     # expr_5
-    # @show_level
+    @show_level
     def expr_5(self):
-        while self.lexema != ';':
+        while self.lexema not in ';,)]':
             self.termino()
 
             if self.lexema not in ['^']:
                 break
 
     # expr_6
-    # @show_level
+    @show_level
     def termino(self):
         self.next_token()
         if self.lexema in ['!', '-']:
@@ -457,19 +492,36 @@ class Parser:
             if self.lexema != ')':
                 self.error_lexema(')')
 
-        if self.tipo not in ["Identificador", "Entero", "Decimal", "Logico"] \
-           and self.lexema != ';' and self.lexema != ')':
-            self.error_tipo('literal')
+        if self.tipo == "Identificador":
+            self.next_token()
 
-        self.next_token()
+            if self.lexema == "(":
+                self.next_token() 
+                
+                if self.tipo in ["Entero", "Decimal", "Logico", "Alfabetico", "Identificador"]:
+                    self.expresion()
+
+                    while self.lexema == ",":
+                        self.expresion()
+
+                if self.lexema != ")":
+                    self.error_lexema(")")
+
+                self.next_token()
+
+        elif self.tipo in ["Entero", "Decimal", "Logico"]:
+            self.next_token()
+
+        else:
+            if self.lexema not in ')],;':
+                self.error_tipo('literal')
 
 
 if __name__ == '__main__':
     from lexer import Lexer
 
-    text = 'fn principal(arg1: entero, arg2: decimal) -> entero { sea x: entero = 0; sea y[3]: entero = {1, 2, 3}; sea w: decimal = 4.5; sea z: alfabetico = "a"; }\n'
+    text = 'fn principal(arg1: entero, arg2: decimal) { sea x: entero = 0; sea y[3]: entero = {1, 2, 3}; sea w: decimal = 4.5; sea z: alfabetico = "a"; }\n'
     lexer = Lexer(text)
     parser = Parser(lexer)
     parser()
-    print(parser.simbolos)
-    print(parser.codigo)
+    print(parser.mapa_simbolos)
