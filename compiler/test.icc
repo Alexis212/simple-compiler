@@ -1,5 +1,7 @@
+sea mut x: entero;
+
 fn principal()
 {
-        sea a: entero = 10;
-        sea b: decimal = 3.14;
+        x = 2 + 2;
+        imprimeln!(x);
 }

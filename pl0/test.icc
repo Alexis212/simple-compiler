@@ -1,7 +1,6 @@
-sea x: entero = 3;
-sea mut xs[x]: entero = {1, 2, 3};
+sea x: alfabetico;
 
 fn principal()
 {
-        imprimeln!(xs);
+        leer(x);
 }

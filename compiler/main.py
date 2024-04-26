@@ -24,6 +24,7 @@ def tokenize_all_files():
         parser()
         print()
         print()
+        parser.make_file('.'.join( file.split('.')[:-1] ))
 
 
 def tokenize_file(path):
