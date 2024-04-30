@@ -1,11 +1,7 @@
 _P,I,I,1,0,#,
 @
-1 LIT 2, 0
-2 LIT 4, 0
-3 LIT 3, 0
-4 OPR 0, 4
-5 OPR 0, 2
-6 LIT 1, 0
-7 OPR 0, 3
-8 OPR 0, 21
-9 OPR 0, 0
+1 LIT 5, 0
+2 LIT 2, 0
+3 OPR 0, 7
+4 OPR 0, 21
+5 OPR 0, 0

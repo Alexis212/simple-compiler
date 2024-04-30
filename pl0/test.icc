@@ -1,6 +1,0 @@
-sea x: alfabetico;
-
-fn principal()
-{
-        leer(x);
-}

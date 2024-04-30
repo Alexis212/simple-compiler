@@ -1,7 +1,6 @@
-sea mut x: entero;
-
 fn principal()
 {
-        x = 2 + 2;
+        sea mut x: entero;
+        x = 1 + 1;
         imprimeln!(x);
 }

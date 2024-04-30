@@ -43,11 +43,12 @@ class Parser:
     tpm 0, 18
     leer 0, 19
     imprimeln 20
-    imprimeln! 21
-    """
+    imprimeln! 21"""
     def __init__(self, tokens):
         self.lexer = iter(tokens)
         self.tipo_var = {'entero': 'E', 'decimal': 'D', 'alfabetico': 'A', 'logico': 'L'}
+        self.opr_num = {'+': 2, '-': 3, '*': 4, '/': 5, '%': 6, '^': 7, '<': 9, '>': 10,
+                        '<=': 11, '>=': 12, '!=': 13, '==': 14, '&&': 15, '||': 16}
 
         self.tipo = ''
         self.lexema = ''
@@ -86,10 +87,8 @@ class Parser:
         self.codigo.append(f"{self.line_inc} {line}\n")
 
     def add_var(self, var, value):
-        self.line_inc += 1
-        self.add_line(f"{self.line_inc} LIT {value}, 0")
-        self.line_inc += 1
-        self.add_line(f"{self.line_inc} STO 0, {var}")
+        self.add_line(f"LIT {value}, 0")
+        self.add_line(f"STO 0, {var}")
 
     def make_tab(self):
         lines = []
@@ -118,8 +117,9 @@ class Parser:
                 self.funcion()
 
             if self.tipo == "Identificador":
+                temp = self.lexema
                 self.next_token()
-                self.asignacion()
+                self.asignacion(temp)
 
             self.next_token()
 
@@ -187,10 +187,11 @@ class Parser:
             self.next_token()
              
         if self.tipo == 'Identificador':
+            temp = self.lexema
             self.next_token()
 
             if self.lexema == '=' or self.lexema == '[':
-                self.asignacion()
+                self.asignacion(temp)
 
             if self.lexema == '(':
                 self.next_token()
@@ -468,7 +469,6 @@ class Parser:
             func_id = '_' + func_id
             self.mapa_simbolos[func_id] = func
 
-    # TODO: Probar 'para'
     @show_level
     def para(self):
         self.next_token()
@@ -577,7 +577,7 @@ class Parser:
 
     # expr_-1
     @show_level
-    def asignacion(self):
+    def asignacion(self, id):
         if self.lexema == '[':
             self.next_token()
             if self.tipo not in ["Identificador", "Entero"]:
@@ -593,61 +593,86 @@ class Parser:
             self.error_lexema("=")
 
         self.expresion()
+        self.add_line(f'STO 0, {id}')
 
         if self.lexema != ';':
             self.error_lexema(";")
 
-    # expr_1
-    # FIXME: Rehacerlo bien
+    # TODO: Marcar error de falta de ) o ] o ;
     @show_level
     def expresion(self):
-        while self.lexema not in ')];':
-            self.expr_2()
+        self.disyuncion()
 
-            if self.lexema not in ["&&", "||"]:
-                break
+    @show_level
+    def disyuncion(self):
+        """||."""
+        self.conjuncion()
+
+        while self.lexema == '||':
+            self.conjuncion()
+            self.add_line(f"OPR 0, 16")
 
     # expr_2
     @show_level
-    def expr_2(self):
-        while self.lexema not in ')];':
-            self.expr_3()
+    def conjuncion(self):
+        """&&."""
+        self.logico()
 
-            if self.tipo != "Operador Relacional":
-                break
+        while self.lexema == '&&':
+            self.logico()
+            self.add_line(f"OPR 0, 15")
 
     # expr_3
     @show_level
-    def expr_3(self):
-        while self.lexema not in ')];':
-            self.expr_4()
+    def logico(self):
+        """<, >, ==, !=, <=, >=."""
+        self.adicion()
 
-            if self.lexema not in ['+', '-']:
-                break
+        while self.lexema in ['<', '>', '==', '!=', '<=', '>=']:
+            temp = self.lexema
+            self.adicion()
+            self.add_line(f"OPR 0, {self.opr_num[temp]}")
 
     # expr_4
     @show_level
-    def expr_4(self):
-        while self.lexema not in ')];':
-            self.expr_5()
+    def adicion(self):
+        """+-."""
+        self.producto()
 
-            if self.lexema not in ['*', '/', '%']:
-                break
+        while self.lexema in '+-':
+            temp = self.lexema
+            self.producto()
+            self.add_line(f"OPR 0, {self.opr_num[temp]}")
 
     # expr_5
     @show_level
-    def expr_5(self):
-        while self.lexema not in ')];':
-            self.termino()
+    def producto(self):
+        """*/%."""
+        self.exponente()
 
-            if self.lexema not in ['^']:
-                break
+        while self.lexema in '*/%':
+            temp = self.lexema
+            self.exponente()
+            self.add_line(f"OPR 0, {self.opr_num[temp]}")
 
     # expr_6
     @show_level
+    def exponente(self):
+        """^."""
+        self.termino()
+
+        while self.lexema == '^':
+            self.termino()
+            self.add_line(f"OPR 0, 7")
+
+    # expr_7
+    @show_level
     def termino(self):
         self.next_token()
-        if self.lexema in ['!', '-']:
+
+        unary = 0
+        if self.lexema in '-!':
+            unary = 8 if self.lexema == '-' else 17
             self.next_token()
 
         if self.lexema == '(':
@@ -656,41 +681,27 @@ class Parser:
             if self.lexema != ')':
                 self.error_lexema(')')
 
-        if self.tipo == "Identificador":
-            self.next_token()
+        elif self.tipo == 'Identificador':
+            self.add_line(f'LOD {self.lexema}, 0')
 
-            if self.lexema == '[':
-                self.expresion()
+        elif self.tipo in ['Entero', 'Decimal']:
+            self.add_line(f'LIT {self.lexema}, 0')
 
-                if self.lexema != ']':
-                    self.error_lexema(']')
-
-                self.next_token()
-
-            elif self.lexema == "(":
-                self.expresion()
-
-                if self.lexema == ",":
-                    self.expresion()
-
-                if self.lexema != ")":
-                    self.error_lexema(")")
-
-                self.next_token()
-
-        elif self.tipo in ["Entero", "Decimal", "Logico"]:
-            self.next_token()
+        elif self.tipo in ['Logico']:
+            self.add_line(f'LIT {self.lexema[0].capitalize()}, 0')
 
         else:
-            if self.lexema not in ')],;':
-                self.error_tipo('literal')
+            self.error_tipo('Literal')
 
-
+        if unary:
+            self.add_line(f'OPR 0, {unary}')
+            
+        self.next_token()
+        
 if __name__ == '__main__':
     from lexer import Lexer
 
-    text = 'fn principal() { sea x: entero = 0; sea y[3]: entero = {1, 2, 3}; sea w: decimal = 4.5; sea z: alfabetico = "a"; }\n'
+    text = 'fn principal() { sea mut x: entero; x = 2 + 2; }\n'
     lexer = Lexer(text)
     parser = Parser(lexer)
     parser()
-    print(parser.mapa_simbolos)
