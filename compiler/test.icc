@@ -2,6 +2,10 @@ sea mut x: entero;
 
 fn principal()
 {
-        x = 2 + 2;
-        imprimeln!(x);
+        ciclo
+        {
+                x = x+1;
+                imprimeln(x);
+        }
+        mientras (x < 10);
 }

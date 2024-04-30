@@ -127,7 +127,7 @@ class Parser:
     def bloque(self):
         self.next_token()
         while self.lexema in ['sea', 'si', 'para', 'mientras', 'tpm', 'leer',
-                              'imprimeln', 'imprimeln!', 'regresa'] \
+                              'imprimeln', 'imprimeln!', 'regresa', 'ciclo'] \
               or self.tipo == 'Identificador':
             self.sentencia()
 
@@ -145,6 +145,9 @@ class Parser:
 
         if self.lexema == 'para':
             self.para()
+
+        if self.lexema == 'ciclo':
+            self.ciclo()
 
         if self.lexema == 'regresa':
             self.expresion()
@@ -468,7 +471,8 @@ class Parser:
             func_id = '_' + func_id
             self.mapa_simbolos[func_id] = func
 
-    # TODO: Probar 'para'
+    # TODO: Añadir expresiones en para
+    # TODO: Convertir .. en su propio lexema
     @show_level
     def para(self):
         self.next_token()
@@ -513,6 +517,37 @@ class Parser:
 
         else:
             self.sentencia()
+
+    # Do - While
+    @show_level
+    def ciclo(self):
+        self.next_token()
+        if self.lexema == '{':
+            self.bloque()
+
+            if self.lexema != '}':
+                self.error_lexema('}')
+
+        else:
+            self.error_lexema('{')
+
+        self.next_token()
+        if self.lexema != 'mientras':
+            self.error_lexema('mientras')
+
+        if self.lexema != '(':
+            self.error_lexema('(')
+
+        self.expresion()
+
+        if self.lexema != ')':
+            self.error_lexema(')')
+
+        self.next_token()
+        if self.lexema != ';':
+            self.error_lexema(';')
+
+        self.next_token()
 
     @show_level
     def mientras(self):
