@@ -1,6 +1,4 @@
 fn principal()
 {
-        sea mut x: entero;
-        x = 1 + 1;
-        imprimeln!(x);
+        vec[i] = (1+1) * 4;
 }

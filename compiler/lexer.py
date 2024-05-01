@@ -34,7 +34,7 @@ class Lexer:
     #     *   ' '  \n   0-9  A^_   !    .    M    /    "    \    <>   =    |    &    D
     #     0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15
     transiciones = [
-        [ 19,   0,   0,   1,   4,  17,  20,   6,   6,   8,  19,  11,  13,  15,  16,  18],  # 0
+        [ 19,   0,   0,   1,   4,  17,  21,   6,   6,   8,  19,  11,  13,  15,  16,  18],  # 0
         [ACP, ACP, ACP,   1, ACP, ACP,   2, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  # 1 Entero
         [ER1, ER1, ER1,   3, ER1, ER1, ACP, ER1, ER1, ER1, ER1, ER1, ER1, ER1, ER1, ER1],  # 2
         [ACP, ACP, ACP,   3, ACP, ACP, ER1, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  # 3 Decimal
@@ -54,7 +54,8 @@ class Lexer:
         [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP,  12, ACP, ACP, ACP],  # 17 Operador Logico !
         [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  # 18 Delimitador
         [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  # 19 Simbolo Especial
-        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP]   # 20 Delimitador .
+        [ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP],  # 20 Delimitador .
+        [ACP, ACP, ACP, ACP, ACP, ACP,  20, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP]   # 21
     ]
 
     columnas = [
@@ -97,6 +98,7 @@ class Lexer:
          18: 'Delimitador',
          19: 'Simbolo Especial',
          20: 'Delimitador',
+         21: 'Delimitador',
 
         # Simbolos
         101: 'Palabra Reservada',
@@ -134,8 +136,7 @@ class Lexer:
 
                 if estado_anterior == 2:
                     yield 'Entero', lexema[:-1], self.linea, self.columna-1 
-                    yield 'Delimitador', '.', self.linea, self.columna-1 
-                    lexema = ""
+                    lexema = "."
 
                     idx -= 1
                     self.columna -= 1

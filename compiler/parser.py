@@ -80,7 +80,12 @@ class Parser:
 
     def next_token(self):
         self.tipo, self.lexema, self.linea, self.columna = next(self.lexer)
-        print(f"[{self.tipo}:{self.lexema}]")
+
+        if self.tipo == 'Comentario':
+            self.next_token()
+
+        else:
+            print(f"[{self.tipo}:{self.lexema}]")
 
     def add_line(self, line):
         self.line_inc += 1
@@ -127,7 +132,7 @@ class Parser:
     def bloque(self):
         self.next_token()
         while self.lexema in ['sea', 'si', 'para', 'mientras', 'tpm', 'leer',
-                              'imprimeln', 'imprimeln!', 'regresa'] \
+                              'imprimeln', 'imprimeln!', 'regresa', 'ciclo'] \
               or self.tipo == 'Identificador':
             self.sentencia()
 
@@ -145,6 +150,9 @@ class Parser:
 
         if self.lexema == 'para':
             self.para()
+
+        if self.lexema == 'ciclo':
+            self.ciclo()
 
         if self.lexema == 'regresa':
             self.expresion()
@@ -355,7 +363,7 @@ class Parser:
 
             self.next_token()
             if self.tipo not in ['Entero', 'Decimal', 'Alfabetico', 'Logico']:
-                self.error_lexema("Literal")
+                self.error_tipo("Literal")
 
             else:
                 values.append(self.lexema)
@@ -364,7 +372,7 @@ class Parser:
             while self.lexema == ",":
                 self.next_token()
                 if self.tipo not in ['Entero', 'Decimal', 'Alfabetico', 'Logico']:
-                    self.error_lexema("Literal")
+                    self.error_tipo("Literal")
 
                 else:
                     values.append(self.lexema)
@@ -469,6 +477,7 @@ class Parser:
             func_id = '_' + func_id
             self.mapa_simbolos[func_id] = func
 
+    # TODO: Añadir expresiones en para
     @show_level
     def para(self):
         self.next_token()
@@ -484,12 +493,8 @@ class Parser:
             self.error_tipo('Identificador o Entero')
 
         self.next_token()
-        if self.lexema != '.':
-            self.error_lexema('.')
-
-        self.next_token()
-        if self.lexema != '.':
-            self.error_lexema('.')
+        if self.lexema != '..':
+            self.error_lexema('..')
 
         self.next_token()
         if self.lexema == '=':
@@ -499,10 +504,15 @@ class Parser:
             self.error_tipo('Identificador o Entero')
 
         self.next_token()
-        if self.lexema not in ['inc', 'dec']:
-            self.error_lexema('inc o dec')
+        if self.lexema == 'inc':
+            self.next_token()
 
-        self.next_token()
+            if self.lexema == '-':
+                self.next_token()
+
+            if self.tipo == 'Entero':
+                self.next_token()
+
         if self.lexema == '{':
             self.bloque()
 
@@ -514,19 +524,35 @@ class Parser:
         else:
             self.sentencia()
 
+    # Do - While
     @show_level
-    def mientras(self):
+    def ciclo(self):
         self.next_token()
+        if self.lexema == '{':
+            self.bloque()
 
-        if self.lexema != '(':
-            self.error_lexema('(')
+            if self.lexema != '}':
+                self.error_lexema('}')
+
+        else:
+            self.error_lexema('{')
+
+        self.next_token()
+        if self.lexema != 'mientras':
+            self.error_lexema('mientras')
 
         self.expresion()
 
-        if self.lexema != ')':
-            self.error_lexema(')')
+        if self.lexema != ';':
+            self.error_lexema(';')
 
         self.next_token()
+
+    @show_level
+    def mientras(self):
+        self.next_token()
+        self.expresion()
+
         if self.lexema == '{':
             self.bloque()
 
@@ -541,15 +567,8 @@ class Parser:
     @show_level
     def si_sino(self):
         self.next_token()
-        if self.lexema != '(':
-            self.error_lexema('(')
-
         self.expresion()
 
-        if self.lexema != ')':
-            self.error_lexema(')')
-
-        self.next_token()
         if self.lexema == '{':
             self.bloque()
 
@@ -579,11 +598,8 @@ class Parser:
     @show_level
     def asignacion(self, id):
         if self.lexema == '[':
-            self.next_token()
-            if self.tipo not in ["Identificador", "Entero"]:
-                self.error_tipo("Identificador o Entero")
+            self.expresion()
 
-            self.next_token()
             if self.lexema != "]":
                 self.error_lexema("]")
 
@@ -598,7 +614,7 @@ class Parser:
         if self.lexema != ';':
             self.error_lexema(";")
 
-    # TODO: Marcar error de falta de ) o ] o ;
+    # TODO: Marcar error de falta de ) o ]
     @show_level
     def expresion(self):
         self.disyuncion()
@@ -681,23 +697,50 @@ class Parser:
             if self.lexema != ')':
                 self.error_lexema(')')
 
+            else:
+                self.next_token()
+
         elif self.tipo == 'Identificador':
-            self.add_line(f'LOD {self.lexema}, 0')
+            self.next_token()
+            if self.lexema == '[':
+                self.expresion()
+
+                if self.lexema != ']':
+                    self.error_lexema(']')
+                    # Insetar ID ; Cargar variable
+
+                else:
+                    self.next_token()
+
+            if self.lexema == '(':
+                self.expresion()
+
+                while self.lexema == ',':
+                    self.expresion()
+
+                if self.lexema != ')':
+                    self.error_lexema(')')
+
+                else:
+                    self.next_token()
+
+            else:
+                self.add_line(f'LOD {self.lexema}, 0')
+
 
         elif self.tipo in ['Entero', 'Decimal']:
             self.add_line(f'LIT {self.lexema}, 0')
+            self.next_token()
 
-        elif self.tipo in ['Logico']:
+        elif self.tipo == 'Logico':
+            # FIXME: Poner los booleanos bien [T, F]
             self.add_line(f'LIT {self.lexema[0].capitalize()}, 0')
-
-        else:
-            self.error_tipo('Literal')
+            self.next_token()
 
         if unary:
             self.add_line(f'OPR 0, {unary}')
-            
-        self.next_token()
         
+
 if __name__ == '__main__':
     from lexer import Lexer
 
