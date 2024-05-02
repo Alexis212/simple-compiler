@@ -1,7 +1,12 @@
+x,V,E,2,0,#
 _P,I,I,1,0,#,
 @
-1 LIT 5, 0
-2 LIT 2, 0
-3 OPR 0, 7
-4 OPR 0, 21
-5 OPR 0, 0
+1 LIT 0, 0
+2 LIT 4, 0
+3 STO 0, x
+4 LIT 1, 0
+5 LIT 5, 0
+6 STO 0, x
+7 LIT 0, 0
+8 LOD x, 0
+9 OPR 0, 21

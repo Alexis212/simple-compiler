@@ -1,11 +1,12 @@
+x, V, E, 2, 0,#
 _principal, F, I, 7, 0,#
 _P, I, I, 1, 0,#
 @
-1 LOD ], 0
-2 LIT 1, 0
+1 LIT 2, 0
+2 LIT 0, 0
 3 LIT 1, 0
-4 OPR 0, 2
-5 LIT 4, 0
-6 OPR 0, 4
-7 STO 0, vec
+4 STO x, 0
+5 LIT 1, 0
+6 LIT 2, 0
+7 STO x, 0
 8 OPR 0, 0

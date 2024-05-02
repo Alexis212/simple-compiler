@@ -1,4 +1,5 @@
+sea mut x[2]:entero = [1, 2];
+
 fn principal()
 {
-        vec[i] = (1+1) * 4;
 }

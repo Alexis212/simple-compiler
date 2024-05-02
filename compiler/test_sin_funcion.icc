@@ -10,7 +10,7 @@ fn principal()
         imprimeln("Dame un numero: ");
         leer(num);
 
-        para i en 1..=num inc -1
+        para i en 1..=num
         {
                 facto = facto * i;
         }
@@ -19,8 +19,7 @@ fn principal()
         // Ordenar vector (bubble sort)
         para i en 0..MAX
         {
-             // para j en (i+1)..(MAX-1)
-                para j en i..MAX
+                para j en i+1..MAX-1
                 {
                         si vec[i] > vec[j]
                         {
@@ -31,63 +30,63 @@ fn principal()
                 }
         }
 
-//         // Imprimir vector ordenado
-//         para i en 0..MAX
-//         {
-//                 imprimeln!("Vector[", i, "]=", vec[i]);
-//         }
-//         imprimeln!("]");
+        // Imprimir vector ordenado
+        para i en 0..MAX
+        {
+                imprimeln!("Vector[", i, "]=", vec[i]);
+        }
+        imprimeln!("]");
 
-//         // Fibonacci (version iterativa)
-//         imprimeln("Dame un numero: ");
-//         leer(num);
+        // Fibonacci (version iterativa)
+        imprimeln("Dame un numero: ");
+        leer(num);
 
-//         si num == 0
-//         {
-//                 fibo = 0;
-//         }
+        si num == 0
+        {
+                fibo = 0;
+        }
 
-//         si num == 1
-//         {
-//                 fibo = 1;
-//         }
+        si num == 1
+        {
+                fibo = 1;
+        }
 
-//         fiba = 0;
-//         fibo = 1;
-//         mientras num > 1
-//         {
-//                 tmp = fibo;
-//                 fibo = fiba + fibo;                                 
-//                 fiba = tmp;
-//         }
-//         imprimeln!("Fibonacci(", num, ")=", fibo);
+        fiba = 0;
+        fibo = 1;
+        mientras num > 1
+        {
+                tmp = fibo;
+                fibo = fiba + fibo;                                 
+                fiba = tmp;
+        }
+        imprimeln!("Fibonacci(", num, ")=", fibo);
 
-//         // Comprobar primo
-//         imprimeln("Dame un numero: ");
-//         leer(num);
+        // Comprobar primo
+        imprimeln("Dame un numero: ");
+        leer(num);
 
-//         ciclo
-//         {
-//                 si (num % i == 0)
-//                 {
-//                         bPrimo = falso;
-//                 }
+        ciclo
+        {
+                si (num % i == 0)
+                {
+                        bPrimo = falso;
+                }
 
-//                 i = i + 1;
-//         } mientras i < num;
+                i = i + 1;
+        } mientras i < num;
 
-//         imprimeln(num);
-//         si bPrimo
-//         {
-//                 imprimeln!(" es PRIMO);
-//         }
-//         sino {
-//                 imprimeln!(" NO es PRIMO);
-//         }
+        imprimeln(num);
+        si bPrimo
+        {
+                imprimeln!(" es PRIMO");
+        }
+        sino {
+                imprimeln!(" NO es PRIMO");
+        }
 
-//         // Final
-//         imprimeln("Como te llamas?");
-//         leer(nombre);
+        // Final
+        imprimeln("Como te llamas? ");
+        leer(nombre);
 
-//         imprimeln!("Felicidades ", nombre, "! Ya pasaste compiladores!");
+        imprimeln!("Felicidades ", nombre, "! Ya pasaste compiladores!");
 }
