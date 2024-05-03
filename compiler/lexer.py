@@ -27,7 +27,7 @@ class Lexer:
     reservadas = [
         'fn', 'principal', 'imprimeln!', 'imprimeln', 'entero', 'decimal', 'logico',
         'alfabetico', 'sea', 'si', 'sino', 'para', 'en', 'mientras', 'ciclo', 'regresa',
-        'leer', 'interrumpe', 'continua', 'mut', 'inc', 'dec', 'y', 'o'
+        'leer', 'interrumpe', 'continua', 'mut', 'inc', 'dec', 'y', 'o', 'no'
     ]
 
     # A^_ := A-z | _ ; M := [+-*%^] ; ' ' := ' ' | \t ; D := [()\[\]{},:;]

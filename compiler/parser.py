@@ -4,15 +4,16 @@
 def show_level(func):
     """Print when the program enter and exit of the function."""
     def inner_function(*args, **kwargs):
-        print(f"Enter {func.__name__}")
+        # print(f"Enter {func.__name__}")
         result = func(*args, **kwargs)
-        print(f"Exited {func.__name__}")
+        # print(f"Exited {func.__name__}")
         return result
 
     return inner_function
 
 
-# TODO: if, mientras, para code
+# FIXME: Errores de codigo cuando cambias ID por palabra reservada
+# TODO: if, mientras, para, ciclo code
 class Parser:
     """Valida el orden de los tokens (comprueba la gramatica).
     Simbolos: Diccionario de variables y valores.
@@ -69,8 +70,8 @@ class Parser:
             self.add_line("OPR 0, 0")
             self.mapa_simbolos['_P'] = ['I', 'I', '1', '0']
             print("Compilacion finalizada.")
-            print(self.mapa_simbolos)
-            print(self.codigo)
+            # print(self.mapa_simbolos)
+            # print(self.codigo)
 
     def error_tipo(self, esperado):
         print(f"Error Sintactico: [{self.linea}:{self.columna}] '{self.lexema}'. Se esperaba un {esperado} y recibio un {self.tipo}.")
@@ -84,14 +85,14 @@ class Parser:
         if self.tipo == 'Comentario':
             self.next_token()
 
-        else:
-            print(f"[{self.tipo}:{self.lexema}]")
+        # else:
+            # print(f"[{self.tipo}:{self.lexema}]")
 
     def add_line(self, line):
         self.line_inc += 1
         line = f"{self.line_inc} {line}\n"
         self.codigo.append(line)
-        print(f":-{line}")
+        # print(f":-{line}")
 
     def add_var(self, var, value):
         self.add_line(f"LIT {value}, 0")
@@ -241,7 +242,8 @@ class Parser:
             simbolo.append('V')
 
         else:
-            simbolo.append('C')
+            simbolo.append('C')        else:
+
 
         if self.tipo != "Identificador":
             self.error_tipo("Identificador")
@@ -251,8 +253,12 @@ class Parser:
 
         self.next_token()
         if self.lexema == "[":
-            self.expresion()
+            # self.expresion()
+            self.next_token()
+            if self.tipo not in ['Identificador', 'Entero']:
+                self.error_tipo('Literal o Identificador')
 
+            self.next_token()
             if self.lexema != "]":
                 self.error_lexema("]")
 
@@ -298,9 +304,15 @@ class Parser:
 
         else:
             simbolo.append(0)
-            for i, val in enumerate(value):
-                self.add_line(f"LIT {i}, 0")
-                self.add_line(f"LIT {val}, 0")
+            if isinstance(value, list):
+                for i, val in enumerate(value):
+                    self.add_line(f"LIT {i}, 0")
+                    self.add_line(f"LIT {val}, 0")
+                    self.add_line(f"STO {var[0]}, 0")
+                    self.mapa_simbolos[var[0]] = simbolo
+
+            else:
+                self.add_line(f"LIT {value}, 0")
                 self.add_line(f"STO {var[0]}, 0")
                 self.mapa_simbolos[var[0]] = simbolo
 
@@ -593,7 +605,7 @@ class Parser:
         if self.lexema != ';':
             self.error_lexema(";")
 
-    # TODO: Marcar error de falta de ) o ]
+    # FIXME: Comprobar palabras reservadas, no permitir expresiones vacias
     @show_level
     def expresion(self):
         self.disyuncion()
@@ -671,7 +683,7 @@ class Parser:
             self.next_token()
 
         unary = 0
-        if self.lexema in '-!':
+        if self.lexema in ['-', '!', 'no']:
             unary = 8 if self.lexema == '-' else 17
             self.next_token()
 

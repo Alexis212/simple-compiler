@@ -1,5 +1,7 @@
 sea mut x[2]:entero = [1, 2];
+sea mut l:logico = verdadero;
 
 fn principal()
 {
+        l = ((((no x[0] > 0))));
 }
