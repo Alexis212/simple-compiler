@@ -1,0 +1,16 @@
+x,V,E,0,0,#
+_P,I,I,1,0,#
+@
+1 LIT 0, 0
+2 STO 0, x
+3 LOD x, 0
+4 LIT 1, 0
+5 OPR 0, 2
+6 STO 0, x
+7 LOD x, 0
+8 OPR 0, 21
+9 LOD x, 0
+10 LIT 5, 0
+11 OPR 0, 9
+12 JMC V, 3
+13 OPR 0, 0

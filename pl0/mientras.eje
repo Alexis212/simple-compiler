@@ -1,0 +1,20 @@
+x,V,E,0,0,#
+_EX1,I,I,14,0,#
+_P,I,I,1,0,#
+@
+1 LIT 0, 0
+2 STO 0, x
+3 LOD x, 0
+4 LIT 5, 0
+5 OPR 0, 9
+6 JMC F, _EX1
+7 LOD x, 0
+8 LIT 1, 0
+9 OPR 0, 2
+10 STO 0, x
+11 LOD x, 0
+12 OPR 0, 21
+13 JMP 0, 3
+14 LIT "Fin del loop", 0
+15 OPR 0, 21
+16 OPR 0, 0

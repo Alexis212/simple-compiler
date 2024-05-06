@@ -1,0 +1,88 @@
+sea MAX:entero=10;
+sea mut vec[MAX]:entero = [33, 1, -3, 15, 2, 100, 10];
+sea mut i, j, k, facto, num, tmp: entero;
+sea mut fibo, fiba: entero;
+sea mut bPrimo:logico = verdadero;
+sea mut nom:alfabetico;
+
+fn facrec(n:entero)-> entero {
+   si n == 0 o n == 1 {
+      regresa n;
+   }
+   sino {
+      regresa n * facrec(n-1);
+   }
+}
+
+fn OrdVec() {
+   //Ordena Vec
+   para i en 0 .. =20 {
+      para j en (i+1)..MAX {
+         si vec[i] > vec[j] {
+            tmp = vec[i];
+            vec[i] = vec; 
+            vec[j] = tmp;
+         }
+      }
+   }
+   regresa;
+   imprimeln("[");
+   para i en 0 .. MAX {
+     imprimeln(vec[i], " ");
+   }
+   imprimeln!("]");
+   //Fin de Ordena
+}
+
+fn esPrimo(n: entero) -> logico {
+   i = 1;
+   ciclo {
+      si n % i == 0 {
+         regresa falso;
+      }
+      i = i + 1;
+   } mientras i < n;
+   regresa verdadero;
+}
+
+fn fibonacci(n:entero) -> logico {
+   //Fibonacci
+   imprimeln("Dame num: ");
+   leer(num);
+   si (((num == 0 || num == 1))) {
+     regresa num;
+   }
+   fiba = 0;
+   fibo = 1;
+   mientras num > 1 {
+      tmp = fibo;
+      fibo = (se + fun) * fiba + fibo;
+      fiba = tmp;
+   }
+   regresa fibo;
+}
+
+fn principal() {
+   imprimeln("Dame num: ");
+   leer(num);
+   imprimeln!("Factorial(", num, ")=", facrec(num));
+   ordvec();
+   imprimeln!("Fibonacci(", num, ")=", fibonacci(num));
+   //Checa primo
+   imprimeln("Dame num: ");
+   leer(num);
+   i = 2;
+   imprimeln(num);
+   si esPrimo(num) {
+      imprimeln!(" es PRIMO");
+   }
+   sino {
+      imprimeln!(" NO es PRIMO");
+   }
+   imprimeln("Como te llamas ? ");
+   leer(nom);
+   imprimeln!("Felicidades ", nom, " ya PASASTE Compiladores");
+}
+
+
+
