@@ -1,6 +1,5 @@
 """Ejecutamos el programa."""
 
-
 import sys
 from lexer import Lexer
 from parser import Parser

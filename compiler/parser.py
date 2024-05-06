@@ -4,15 +4,14 @@
 def show_level(func):
     """Print when the program enter and exit of the function."""
     def inner_function(*args, **kwargs):
-        # print(f"Enter {func.__name__}")
+        print(f"Enter {func.__name__}")
         result = func(*args, **kwargs)
-        # print(f"Exited {func.__name__}")
+        print(f"Exited {func.__name__}")
         return result
 
     return inner_function
 
 
-# FIXME: Errores de codigo cuando cambias ID por palabra reservada
 # TODO: if, mientras, para, ciclo code
 class Parser:
     """Valida el orden de los tokens (comprueba la gramatica).
@@ -70,8 +69,8 @@ class Parser:
             self.add_line("OPR 0, 0")
             self.mapa_simbolos['_P'] = ['I', 'I', '1', '0']
             print("Compilacion finalizada.")
-            # print(self.mapa_simbolos)
-            # print(self.codigo)
+            print(self.mapa_simbolos)
+            print(self.codigo)
 
     def error_tipo(self, esperado):
         print(f"Error Sintactico: [{self.linea}:{self.columna}] '{self.lexema}'. Se esperaba un {esperado} y recibio un {self.tipo}.")
@@ -85,24 +84,24 @@ class Parser:
         if self.tipo == 'Comentario':
             self.next_token()
 
-        # else:
-            # print(f"[{self.tipo}:{self.lexema}]")
+        else:
+            print(f"[{self.tipo}:{self.lexema}]")
 
     def add_line(self, line):
         self.line_inc += 1
         line = f"{self.line_inc} {line}\n"
         self.codigo.append(line)
-        # print(f":-{line}")
+        print(f":-{line}")
 
     def add_var(self, var, value):
         self.add_line(f"LIT {value}, 0")
-        self.add_line(f"STO {var}, 0")
+        self.add_line(f"STO 0, {var}")
 
     def make_tab(self):
         lines = []
         for x, y in self.mapa_simbolos.items():
-            line = ', '.join(str(x) for x in y)
-            lines.append(f"{x}, {line},#\n")
+            line = ','.join(str(x) for x in y)
+            lines.append(f"{x},{line},#\n")
         return lines
 
     def make_file(self, name='out'):
@@ -242,8 +241,7 @@ class Parser:
             simbolo.append('V')
 
         else:
-            simbolo.append('C')        else:
-
+            simbolo.append('C')
 
         if self.tipo != "Identificador":
             self.error_tipo("Identificador")
@@ -296,7 +294,7 @@ class Parser:
 
         else:
             value = {'E': 0, 'D': 0.0, 'A': '""', 'L': 'F', 'I': None}[tipo]
-            # FIXME: Detectar el largo de cada vector individualmente
+            # TODO: Detectar el largo de cada vector individualmente?
             simbolo.append(0)
 
         if self.lexema != ";":
@@ -308,12 +306,12 @@ class Parser:
                 for i, val in enumerate(value):
                     self.add_line(f"LIT {i}, 0")
                     self.add_line(f"LIT {val}, 0")
-                    self.add_line(f"STO {var[0]}, 0")
+                    self.add_line(f"STO 0, {var[0]}")
                     self.mapa_simbolos[var[0]] = simbolo
 
-            else:
+            elif var:
                 self.add_line(f"LIT {value}, 0")
-                self.add_line(f"STO {var[0]}, 0")
+                self.add_line(f"STO 0, {var[0]}")
                 self.mapa_simbolos[var[0]] = simbolo
 
     @show_level
@@ -325,10 +323,17 @@ class Parser:
         self.expresion()
 
         while self.lexema == ',':
+            self.add_line("OPR 0, 20")
             self.expresion()
 
         if self.lexema != ')':
             self.error_lexema(')')
+
+        if new_line:
+            self.add_line("OPR 0, 21")
+
+        else:
+            self.add_line("OPR 0, 20")
 
         self.next_token()
         if self.lexema != ';':
@@ -517,6 +522,7 @@ class Parser:
     # Do - While
     @show_level
     def ciclo(self):
+        li = self.line_inc + 1
         self.next_token()
         if self.lexema == '{':
             self.bloque()
@@ -536,12 +542,16 @@ class Parser:
         if self.lexema != ';':
             self.error_lexema(';')
 
+        self.add_line(f"JMC V, {li}")
         self.next_token()
 
     @show_level
     def mientras(self):
-        self.next_token()
+        ri = self.reg_inc
+        li = self.line_inc + 1
         self.expresion()
+
+        self.add_line(f"JMC F, _RE{ri}")
 
         if self.lexema == '{':
             self.bloque()
@@ -549,10 +559,14 @@ class Parser:
             if self.lexema != '}':
                 self.error_lexema('}')
 
+            self.add_line(f"JMP 0, {li}")
+            self.mapa_simbolos[f'_RE{ri}'] = ['I', 'I', self.line_inc + 1, '0']
+            self.reg_inc += 1
             self.next_token()
 
         else:
-            self.sentencia()
+            # self.sentencia()
+            self.error_lexema('{')
 
     @show_level
     def si_sino(self):
@@ -600,7 +614,7 @@ class Parser:
             self.error_lexema("=")
 
         self.expresion()
-        self.add_line(f'STO {id}, 0')
+        self.add_line(f'STO 0, {id}')
 
         if self.lexema != ';':
             self.error_lexema(";")
@@ -696,19 +710,22 @@ class Parser:
             else:
                 self.next_token()
 
-        elif self.tipo == 'Identificador':
+        id = self.lexema
+        is_fun = False
+        if self.tipo == 'Identificador':
             self.next_token()
             if self.lexema == '[':
                 self.expresion()
 
                 if self.lexema != ']':
                     self.error_lexema(']')
-                    # Insetar ID ; Cargar variable
+                    # Insetar ID?
 
                 else:
                     self.next_token()
 
-            if self.lexema == '(':
+            elif self.lexema == '(':
+                is_fun = True
                 self.expresion()
 
                 while self.lexema == ',':
@@ -720,17 +737,20 @@ class Parser:
                 else:
                     self.next_token()
 
-            else:
-                self.add_line(f'LOD {self.lexema}, 0')
+            if not is_fun:
+                self.add_line(f'LOD {id}, 0')
 
         elif self.tipo in ['Entero', 'Decimal', 'Alfabetico']:
             self.add_line(f'LIT {self.lexema}, 0')
             self.next_token()
 
         elif self.tipo == 'Logico':
-            # FIXME: Poner los booleanos bien [T, F]
-            self.add_line(f'LIT {self.lexema[0].capitalize()}, 0')
+            temp = 'V' if self.lexema == 'verdadero' else 'F'
+            self.add_line(f'LIT {temp}, 0')
             self.next_token()
+
+        else:
+            self.error_tipo('Identificador o Literal')
 
         if unary:
             self.add_line(f'OPR 0, {unary}')
