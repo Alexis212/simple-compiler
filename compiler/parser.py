@@ -12,7 +12,7 @@ def show_level(func):
     return inner_function
 
 
-# TODO: if, mientras, para, ciclo code
+# TODO: if, para code
 class Parser:
     """Valida el orden de los tokens (comprueba la gramatica).
     Simbolos: Diccionario de variables y valores.
@@ -145,6 +145,8 @@ class Parser:
             self.next_token()
 
         if self.lexema == 'si':
+            self.sino_reg = self.reg_inc
+            self.reg_inc += 1
             self.si_sino()
 
         if self.lexema == 'mientras':
@@ -569,8 +571,11 @@ class Parser:
             self.error_lexema('{')
 
     @show_level
-    def si_sino(self):
+    def si_sino(self, first=True):
+        ri = self.reg_inc
+        self.reg_inc += 1
         self.expresion()
+        self.add_line(f"JMC F, _RE{ri}")
 
         if self.lexema == '{':
             self.bloque()
@@ -579,14 +584,16 @@ class Parser:
                 self.error_lexema('}')
 
             self.next_token()
+            self.add_line(f"JMP 0, _RE{self.sino_reg}")
+            self.mapa_simbolos[f'_RE{ri}'] = ['I', 'I', self.line_inc + (not first), '0']
 
         else:
-            self.sentencia()
+            self.error_lexema('{')
 
         if self.lexema == 'sino':
             self.next_token()
             if self.lexema == 'si':
-                self.si_sino()
+                self.si_sino(False)
 
             if self.lexema == '{':
                 self.bloque()
@@ -595,9 +602,11 @@ class Parser:
                     self.error_lexema('}')
 
                 self.next_token()
+                self.mapa_simbolos[f'_RE{ri-1}'][2] += 1  # NOTE: Add hoc solution
+                self.mapa_simbolos[f'_RE{self.sino_reg}'] = ['I', 'I', self.line_inc + 1, '0']
  
             else:
-                self.sentencia()
+                self.error_lexema('{')
 
     # expr_-1
     @show_level

@@ -1,8 +1,8 @@
-sea mut lados:entero = 3;
+sea mut lados:entero = 2;
 
 fn principal()
 {
-        si lados < 0
+        si lados == 0
         {
                 imprimeln!("Es un circulo");
         }
