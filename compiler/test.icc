@@ -1,11 +1,21 @@
-sea mut a:entero = 0;
+sea mut lados:entero = 3;
 
 fn principal()
 {
-        mientras a > 0
+        si lados < 0
         {
-                a = a-1; 
-                imprimeln!(a);
+                imprimeln!("Es un circulo");
         }
-        imprimeln!("Fin del loop");
+
+        sino si lados > 3
+        {
+                imprimeln!("Es un poligono");
+        }
+
+        sino
+        {
+                imprimeln!("No es una figura");
+        }
+
+        imprimeln!("Adios");
 }

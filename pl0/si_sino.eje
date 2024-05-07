@@ -1,5 +1,6 @@
 x,V,E,0,0,#
-_EX0,I,I,10,0,#
+_EX0,I,I,11,0,#
+_EX1,I,I,13,0,#
 _P,I,I,1,0,#
 @
 1 LIT 0, 0
@@ -11,6 +12,9 @@ _P,I,I,1,0,#
 7 JMC F, _EX0
 8 LIT "Eres mayor de edad", 0
 9 OPR 0, 21
-10 LIT "Adios", 0
-11 OPR 0, 21
-12 OPR 0, 0
+10 JMP 0, _EX1
+11 LIT "Eres menor de edad", 0
+12 OPR 0, 21
+13 LIT "Adios", 0
+14 OPR 0, 21
+15 OPR 0, 0
