@@ -1,21 +1,26 @@
-sea mut lados:entero = 2;
+sea mut x:entero = 7;
 
 fn principal()
 {
-        si lados == 0
+        si x > 10
         {
-                imprimeln!("Es un circulo");
+                imprimeln("b");
         }
 
-        sino si lados > 3
+        sino si x > 20
         {
-                imprimeln!("Es un poligono");
+        }
+
+        sino si x > 30
+        {
+        }
+
+        sino si x > 50
+        {
         }
 
         sino
         {
-                imprimeln!("No es una figura");
+                imprimeln("b");
         }
-
-        imprimeln!("Adios");
 }

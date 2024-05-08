@@ -56,7 +56,7 @@ class Parser:
         self.columna = -1
 
         self.reg_inc = 0
-        self.line_inc = 0
+        self.line_inc = 1
 
         self.mapa_simbolos = {}
         self.codigo = []
@@ -88,9 +88,9 @@ class Parser:
             print(f"[{self.tipo}:{self.lexema}]")
 
     def add_line(self, line):
-        self.line_inc += 1
         line = f"{self.line_inc} {line}\n"
         self.codigo.append(line)
+        self.line_inc += 1
         print(f":-{line}")
 
     def add_var(self, var, value):
@@ -479,18 +479,21 @@ class Parser:
             func_id = '_' + func_id
             self.mapa_simbolos[func_id] = func
 
-    # TODO: Añadir expresiones en para
+    # TODO: Agregar condicion para el = y el -
     @show_level
     def para(self):
         self.next_token()
         if self.tipo != 'Identificador':
             self.error_tipo('Identificador')
 
+        inc = self.lexema
+        self.mapa_simbolos[inc] = ['V', 'E', '0', '0']
         self.next_token()
         if self.lexema != 'en':
             self.error_lexema('en')
 
         self.expresion()
+        self.add_line(f"STO 0, {inc}")
 
         if self.lexema != '..':
             self.error_lexema('..')
@@ -499,7 +502,15 @@ class Parser:
         # if self.lexema == '=':
         #     self.next_token()
 
+        li = self.line_inc
+        self.add_line(f"LOD {inc}, 0")
         self.expresion()
+
+        # TODO: Definir esto despues del inc
+        ri = self.reg_inc
+        self.reg_inc += 1
+        self.add_line("OPR 0, 9")
+        self.add_line(f"JMC F, _RE{ri}")
 
         if self.lexema == 'inc':
             self.next_token()
@@ -516,10 +527,17 @@ class Parser:
             if self.lexema != '}':
                 self.error_lexema('}')
 
+            self.add_line(f"LOD {inc}, 0")
+            self.add_line(f"LIT 1, 0")
+            self.add_line("OPR 0, 2")
+            self.add_line(f"STO 0, {inc}")
+
+            self.add_line(f"JMP 0, {li}")
+            self.mapa_simbolos[f'_RE{ri}'] = ['I', 'I', self.line_inc, '0']
             self.next_token()
 
         else:
-            self.sentencia()
+            self.error_lexema('{')
 
     # Do - While
     @show_level
@@ -562,7 +580,7 @@ class Parser:
                 self.error_lexema('}')
 
             self.add_line(f"JMP 0, {li}")
-            self.mapa_simbolos[f'_RE{ri}'] = ['I', 'I', self.line_inc + 1, '0']
+            self.mapa_simbolos[f'_RE{ri}'] = ['I', 'I', self.line_inc, '0']
             self.reg_inc += 1
             self.next_token()
 
@@ -571,11 +589,8 @@ class Parser:
             self.error_lexema('{')
 
     @show_level
-    def si_sino(self, first=True):
-        ri = self.reg_inc
-        self.reg_inc += 1
+    def si_sino(self):
         self.expresion()
-        self.add_line(f"JMC F, _RE{ri}")
 
         if self.lexema == '{':
             self.bloque()
@@ -584,8 +599,6 @@ class Parser:
                 self.error_lexema('}')
 
             self.next_token()
-            self.add_line(f"JMP 0, _RE{self.sino_reg}")
-            self.mapa_simbolos[f'_RE{ri}'] = ['I', 'I', self.line_inc + (not first), '0']
 
         else:
             self.error_lexema('{')
@@ -593,17 +606,15 @@ class Parser:
         if self.lexema == 'sino':
             self.next_token()
             if self.lexema == 'si':
-                self.si_sino(False)
+                self.si_sino()
 
-            if self.lexema == '{':
+            elif self.lexema == '{':
                 self.bloque()
     
                 if self.lexema != '}':
                     self.error_lexema('}')
 
                 self.next_token()
-                self.mapa_simbolos[f'_RE{ri-1}'][2] += 1  # NOTE: Add hoc solution
-                self.mapa_simbolos[f'_RE{self.sino_reg}'] = ['I', 'I', self.line_inc + 1, '0']
  
             else:
                 self.error_lexema('{')
