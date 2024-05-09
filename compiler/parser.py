@@ -145,8 +145,6 @@ class Parser:
             self.next_token()
 
         if self.lexema == 'si':
-            self.sino_reg = self.reg_inc
-            self.reg_inc += 1
             self.si_sino()
 
         if self.lexema == 'mientras':
@@ -590,8 +588,12 @@ class Parser:
 
     @show_level
     def si_sino(self):
-        self.expresion()
+        ri = self.reg_inc
+        self.reg_inc += 1
 
+        # si
+        self.expresion()
+        self.add_line(f"JMC F, _RE{self.reg_inc}")
         if self.lexema == '{':
             self.bloque()
 
@@ -603,21 +605,43 @@ class Parser:
         else:
             self.error_lexema('{')
 
+        self.add_line(f"JMP 0, _RE{ri}")
+        self.mapa_simbolos[f"_RE{self.reg_inc}"] = ['I', 'I', self.line_inc, '0']
+        # sino si
         if self.lexema == 'sino':
             self.next_token()
-            if self.lexema == 'si':
-                self.si_sino()
-
-            elif self.lexema == '{':
-                self.bloque()
+            while self.lexema == 'si':
+                self.reg_inc += 1
+                self.expresion()
+                self.add_line(f"JMC F, _RE{self.reg_inc}")
+                if self.lexema == '{':
+                    self.bloque()
     
+                    if self.lexema != '}':
+                        self.error_lexema('}')
+
+                    self.next_token()
+                    self.add_line(f"JMP 0, _RE{ri}")
+                    self.mapa_simbolos[f"_RE{self.reg_inc}"] = ['I', 'I', self.line_inc, '0']
+                    if self.lexema == 'sino':
+                        self.next_token()
+ 
+                else:
+                    self.error_lexema('{')
+
+            # ultimo sino
+            if self.lexema == '{':
+                self.bloque()
+
                 if self.lexema != '}':
                     self.error_lexema('}')
 
                 self.next_token()
- 
+
             else:
-                self.error_lexema('{')
+                self.error_lexema('}')
+
+        self.mapa_simbolos[f"_RE{ri}"] = ['I', 'I', self.line_inc, '0']
 
     # expr_-1
     @show_level

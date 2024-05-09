@@ -4,23 +4,16 @@ fn principal()
 {
         si x > 10
         {
-                imprimeln("b");
+                imprimeln(x); 
         }
-
-        sino si x > 20
+        si x > 20
         {
+                imprimeln(x);
         }
-
-        sino si x > 30
-        {
-        }
-
-        sino si x > 50
-        {
-        }
-
         sino
         {
-                imprimeln("b");
+                imprimeln(x);
         }
+
+        imprimeln!("Adios");
 }

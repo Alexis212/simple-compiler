@@ -1,5 +1,8 @@
 x,V,E,0,0,#
-_principal,F,I,19,0,#
+_RE1,I,I,19,0,#
+_RE0,I,I,10,0,#
+_RE2,I,I,17,0,#
+_principal,F,I,21,0,#
 _P,I,I,1,0,#
 @
 1 LIT 7, 0
@@ -7,17 +10,19 @@ _P,I,I,1,0,#
 3 LOD x, 0
 4 LIT 10, 0
 5 OPR 0, 10
-6 LIT "b", 0
-7 OPR 0, 20
-8 LOD x, 0
-9 LIT 20, 0
-10 OPR 0, 10
-11 LOD x, 0
-12 LIT 30, 0
-13 OPR 0, 10
+6 JMC F, _RE1
+7 LOD x, 0
+8 OPR 0, 20
+9 JMP 0, _RE0
+10 LOD x, 0
+11 LIT 20, 0
+12 OPR 0, 10
+13 JMC F, _RE2
 14 LOD x, 0
-15 LIT 50, 0
-16 OPR 0, 10
-17 LIT "b", 0
+15 OPR 0, 20
+16 JMP 0, _RE1
+17 LOD x, 0
 18 OPR 0, 20
-19 OPR 0, 0
+19 LIT "Adios", 0
+20 OPR 0, 21
+21 OPR 0, 0
