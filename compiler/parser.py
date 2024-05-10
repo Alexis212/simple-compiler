@@ -116,6 +116,7 @@ class Parser:
 
         while self.lexema in ['sea', 'fn'] \
               or self.tipo in ["Identificador"]:
+
             if self.lexema == 'sea':
                 self.declaracion()
 
@@ -139,9 +140,9 @@ class Parser:
 
     @show_level
     def sentencia(self):
-        if self.lexema == 'sea':
-            self.declaracion()
-            self.next_token()
+        # if self.lexema == 'sea':
+        #     self.declaracion()
+        #     self.next_token()
 
         if self.lexema == 'si':
             self.si_sino()
@@ -236,88 +237,69 @@ class Parser:
 
     @show_level
     def declaracion(self):
-        simbolo = []
-        var = []
-        value = ''
+        ids = []
+        leng = 0
 
         self.next_token()
-        if self.lexema == "mut":
-            self.next_token()
-            simbolo.append('V')
+        if self.tipo == 'Identificador':
+            ids.append(self.lexema)
 
         else:
-            simbolo.append('C')
-
-        if self.tipo != "Identificador":
-            self.error_tipo("Identificador")
-
-        else:
-            var.append(self.lexema)
+            self.error_lexema('Identificador')
 
         self.next_token()
-        if self.lexema == "[":
-            # self.expresion()
+        if self.lexema == '[':
             self.next_token()
-            if self.tipo not in ['Identificador', 'Entero']:
-                self.error_tipo('Literal o Identificador')
+            # TODO: Agregar tipo 'Identificador'
+            if self.tipo == 'Entero':
+                leng = int(self.lexema)
 
-            self.next_token()
-            if self.lexema != "]":
-                self.error_lexema("]")
-
-        while self.lexema == ',':
-            self.next_token()
-            if self.tipo != "Identificador":
-                self.error_tipo("Identificador")
-    
             else:
-                var.append(self.lexema)
-    
-            self.next_token()
-            if self.lexema == "[":
-                self.expresion()
+                self.error_tipo('Entero')
 
-                if self.lexema != "]":
-                    self.error_lexema("]")
-
-        # TODO: Esto podría dar error
-        if self.lexema == ']':
             self.next_token()
-    
-        if self.lexema != ":":
-            self.error_lexema(":")
+            if self.lexema != ']':
+                self.error_lexema(']')
+
+            self.next_token()
+
+        else:
+            # TODO: Check if leng is equal to len(ids)
+            while self.lexema == ',':
+                self.next_token()
+                if self.tipo == 'Identificador':
+                    ids.append(self.lexema)
+
+                else:
+                    self.error_tipo('Identificador')
+
+                self.next_token()
+
+        if self.lexema != ':':
+            self.error_lexema(':')
 
         self.tipo_variable()
-        tipo = self.tipo_var.get(self.lexema, 'I')
-        simbolo.append(tipo)
+        tipo = self.tipo_var[self.lexema]
 
         self.next_token()
-        if self.lexema == "=":
-            value = self.valor()
-            simbolo.append(0 if not isinstance(value, list) else len(value))
+        if self.lexema == '=':
             self.next_token()
+            if self.lexema == '[':
+                pass
+
+            else:
+                self.expresion()
+                self.add_line(f"STO 0, {ids[0]}")
 
         else:
-            value = {'E': 0, 'D': 0.0, 'A': '""', 'L': 'F', 'I': None}[tipo]
-            # TODO: Detectar el largo de cada vector individualmente?
-            simbolo.append(0)
+            def_val = {'E': 0, 'D': 0.0, 'A': '""', 'L': 'F'}[tipo]
 
-        if self.lexema != ";":
-            self.error_lexema(";")
+            for v in ids:
+                self.add_line(f"LIT {def_val}, 0")
+                self.add_line(f"STO 0, {v}")
 
-        else:
-            simbolo.append(0)
-            if isinstance(value, list):
-                for i, val in enumerate(value):
-                    self.add_line(f"LIT {i}, 0")
-                    self.add_line(f"LIT {val}, 0")
-                    self.add_line(f"STO 0, {var[0]}")
-                    self.mapa_simbolos[var[0]] = simbolo
-
-            elif var:
-                self.add_line(f"LIT {value}, 0")
-                self.add_line(f"STO 0, {var[0]}")
-                self.mapa_simbolos[var[0]] = simbolo
+        if self.lexema != ';':
+            self.error_lexema(';')
 
     @show_level
     def imprime(self, new_line):
@@ -352,51 +334,6 @@ class Parser:
         self.next_token()
         if self.lexema not in ['entero', 'decimal', 'logico', 'alfabetico']:
             self.error_tipo("Tipo")
-
-    @show_level
-    def valor(self):
-        self.next_token()
-        if self.lexema == "[":
-            values = []
-
-            self.next_token()
-            if self.lexema == '-':
-                self.next_token()
-
-            if self.tipo not in ['Entero', 'Decimal', 'Alfabetico', 'Logico']:
-                self.error_tipo("Literal")
-
-            else:
-                values.append(self.lexema)
-
-            self.next_token()
-            while self.lexema == ",":
-                self.next_token()
-                if self.lexema == '-':
-                    self.next_token()
-
-                if self.tipo not in ['Entero', 'Decimal', 'Alfabetico', 'Logico']:
-                    self.error_tipo("Literal")
-
-                else:
-                    values.append(self.lexema)
-                self.next_token()
-
-            if self.lexema != "]":
-                self.error_lexema("]")
-
-            else:
-                return values
-
-        else:
-            if self.lexema == '-':
-                self.next_token()
-
-            if self.tipo not in ['Entero', 'Decimal', 'Alfabetico', 'Logico']:
-                self.error_tipo("literal")
-
-            else:
-                return self.lexema
 
     @show_level
     def funcion(self):

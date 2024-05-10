@@ -1,35 +1,11 @@
-vec,C,E,4,0,#
-i,C,E,0,0,#
-_RE0,I,I,29,0,#
-_principal,F,I,29,0,#
 _P,I,I,1,0,#
 @
 1 LIT 0, 0
-2 LIT 2, 0
-3 STO 0, vec
-4 LIT 1, 0
-5 LIT 3, 0
-6 STO 0, vec
-7 LIT 2, 0
-8 LIT 5, 0
-9 STO 0, vec
-10 LIT 3, 0
-11 LIT 7, 0
-12 STO 0, vec
-13 LIT 0, 0
-14 STO 0, i
-15 LIT 0, 0
-16 STO 0, x
-17 LOD x, 0
-18 LIT 4, 0
-19 OPR 0, 9
-20 JMC F, _RE0
-21 LOD i, 0
-22 LOD vec, 0
-23 OPR 0, 21
-24 LOD x, 0
-25 LIT 1, 0
-26 OPR 0, 2
-27 STO 0, x
-28 JMP 0, 17
-29 OPR 0, 0
+2 STO 0, a
+3 LIT 0, 0
+4 STO 0, b
+5 LIT 0, 0
+6 STO 0, c
+7 LIT 0, 0
+8 STO 0, d
+9 OPR 0, 0
