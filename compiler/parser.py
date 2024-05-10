@@ -12,7 +12,6 @@ def show_level(func):
     return inner_function
 
 
-# TODO: if, para code
 class Parser:
     """Valida el orden de los tokens (comprueba la gramatica).
     Simbolos: Diccionario de variables y valores.
@@ -147,6 +146,9 @@ class Parser:
         if self.lexema == 'si':
             self.si_sino()
 
+        if self.lexema == 'sino':
+            print("Error sintactico: 'sino' sin un bloque 'si' asociado.")
+
         if self.lexema == 'mientras':
             self.mientras()
 
@@ -157,9 +159,12 @@ class Parser:
             self.ciclo()
 
         if self.lexema == 'regresa':
-            self.expresion()
+            self.next_token()
             if self.lexema != ';':
-                self.error_lexema(';')
+                self.expresion()
+
+                if self.lexema != ';':
+                    self.error_lexema(';')
 
             self.next_token()
 
@@ -320,10 +325,12 @@ class Parser:
         if self.lexema != '(':
             self.error_lexema('(')
 
+        self.next_token()
         self.expresion()
 
         while self.lexema == ',':
             self.add_line("OPR 0, 20")
+            self.next_token()
             self.expresion()
 
         if self.lexema != ')':
@@ -477,47 +484,64 @@ class Parser:
             func_id = '_' + func_id
             self.mapa_simbolos[func_id] = func
 
-    # TODO: Agregar condicion para el = y el -
+    # TODO: Hacer que use sus propios simbolos (simbolos locales)
     @show_level
     def para(self):
+        eq = False
+        neg = False
+        inc = 1
+
         self.next_token()
         if self.tipo != 'Identificador':
             self.error_tipo('Identificador')
 
-        inc = self.lexema
-        self.mapa_simbolos[inc] = ['V', 'E', '0', '0']
+        id = self.lexema
+        # self.mapa_simbolos[id] = ['V', 'E', '0', '0']
+
         self.next_token()
         if self.lexema != 'en':
             self.error_lexema('en')
 
+        self.next_token()
         self.expresion()
-        self.add_line(f"STO 0, {inc}")
+        self.add_line(f"STO 0, {id}")
 
         if self.lexema != '..':
             self.error_lexema('..')
 
-        # self.next_token()
-        # if self.lexema == '=':
-        #     self.next_token()
+        self.next_token()
+        if self.lexema == '=':
+            eq = True
+            self.next_token()
 
         li = self.line_inc
-        self.add_line(f"LOD {inc}, 0")
+        self.add_line(f"LOD {id}, 0")
         self.expresion()
-
-        # TODO: Definir esto despues del inc
-        ri = self.reg_inc
-        self.reg_inc += 1
-        self.add_line("OPR 0, 9")
-        self.add_line(f"JMC F, _RE{ri}")
 
         if self.lexema == 'inc':
             self.next_token()
 
             if self.lexema == '-':
+                neg = True
                 self.next_token()
 
             if self.tipo == 'Entero':
+                inc = self.lexema
                 self.next_token()
+
+            else:
+                self.error_tipo('entero')
+
+        ri = self.reg_inc
+        self.reg_inc += 1
+
+        if neg:
+            self.add_line("OPR 0, 12" if eq else "OPR 0, 10")
+
+        else:
+            self.add_line("OPR 0, 11" if eq else "OPR 0, 9")
+
+        self.add_line(f"JMC F, _RE{ri}")
 
         if self.lexema == '{':
             self.bloque()
@@ -525,10 +549,10 @@ class Parser:
             if self.lexema != '}':
                 self.error_lexema('}')
 
-            self.add_line(f"LOD {inc}, 0")
-            self.add_line(f"LIT 1, 0")
-            self.add_line("OPR 0, 2")
-            self.add_line(f"STO 0, {inc}")
+            self.add_line(f"LOD {id}, 0")
+            self.add_line(f"LIT {inc}, 0")
+            self.add_line("OPR 0, 3" if neg else "OPR 0, 2")
+            self.add_line(f"STO 0, {id}")
 
             self.add_line(f"JMP 0, {li}")
             self.mapa_simbolos[f'_RE{ri}'] = ['I', 'I', self.line_inc, '0']
@@ -555,6 +579,7 @@ class Parser:
         if self.lexema != 'mientras':
             self.error_lexema('mientras')
 
+        self.next_token()
         self.expresion()
 
         if self.lexema != ';':
@@ -567,6 +592,7 @@ class Parser:
     def mientras(self):
         ri = self.reg_inc
         li = self.line_inc + 1
+        self.next_token()
         self.expresion()
 
         self.add_line(f"JMC F, _RE{ri}")
@@ -592,6 +618,7 @@ class Parser:
         self.reg_inc += 1
 
         # si
+        self.next_token()
         self.expresion()
         self.add_line(f"JMC F, _RE{self.reg_inc}")
         if self.lexema == '{':
@@ -612,6 +639,7 @@ class Parser:
             self.next_token()
             while self.lexema == 'si':
                 self.reg_inc += 1
+                self.next_token()
                 self.expresion()
                 self.add_line(f"JMC F, _RE{self.reg_inc}")
                 if self.lexema == '{':
@@ -642,11 +670,13 @@ class Parser:
                 self.error_lexema('}')
 
         self.mapa_simbolos[f"_RE{ri}"] = ['I', 'I', self.line_inc, '0']
+        self.reg_inc += 1
 
     # expr_-1
     @show_level
     def asignacion(self, id):
         if self.lexema == '[':
+            self.next_token()
             self.expresion()
 
             if self.lexema != "]":
@@ -657,13 +687,13 @@ class Parser:
         if self.lexema != '=':
             self.error_lexema("=")
 
+        self.next_token()
         self.expresion()
         self.add_line(f'STO 0, {id}')
 
         if self.lexema != ';':
             self.error_lexema(";")
 
-    # FIXME: Comprobar palabras reservadas, no permitir expresiones vacias
     @show_level
     def expresion(self):
         self.disyuncion()
@@ -674,6 +704,7 @@ class Parser:
         self.conjuncion()
 
         while self.lexema in ['||', 'o']:
+            self.next_token()
             self.conjuncion()
             self.add_line(f"OPR 0, 16")
 
@@ -684,6 +715,7 @@ class Parser:
         self.logico()
 
         while self.lexema in ['&&', 'y']:
+            self.next_token()
             self.logico()
             self.add_line(f"OPR 0, 15")
 
@@ -695,6 +727,7 @@ class Parser:
 
         while self.lexema in ['<', '>', '==', '!=', '<=', '>=']:
             temp = self.lexema
+            self.next_token()
             self.adicion()
             self.add_line(f"OPR 0, {self.opr_num[temp]}")
 
@@ -706,6 +739,7 @@ class Parser:
 
         while self.lexema in '+-':
             temp = self.lexema
+            self.next_token()
             self.producto()
             self.add_line(f"OPR 0, {self.opr_num[temp]}")
 
@@ -717,6 +751,7 @@ class Parser:
 
         while self.lexema in '*/%':
             temp = self.lexema
+            self.next_token()
             self.exponente()
             self.add_line(f"OPR 0, {self.opr_num[temp]}")
 
@@ -727,6 +762,7 @@ class Parser:
         self.termino()
 
         while self.lexema == '^':
+            self.next_token()
             self.termino()
             self.add_line(f"OPR 0, 7")
 
@@ -734,18 +770,13 @@ class Parser:
     # expr_7
     @show_level
     def termino(self):
-        self.next_token()
-
-        # TODO: Esperar a que no cause problemas y tegas que cambiarlo
-        if self.lexema == '=':
-            self.next_token()
-
         unary = 0
         if self.lexema in ['-', '!', 'no']:
             unary = 8 if self.lexema == '-' else 17
             self.next_token()
 
         if self.lexema == '(':
+            self.next_token()
             self.expresion()
 
             if self.lexema != ')':
@@ -754,11 +785,12 @@ class Parser:
             else:
                 self.next_token()
 
-        id = self.lexema
-        is_fun = False
-        if self.tipo == 'Identificador':
+        elif self.tipo == 'Identificador':
+            is_fun = False
+            id = self.lexema
             self.next_token()
             if self.lexema == '[':
+                self.next_token()
                 self.expresion()
 
                 if self.lexema != ']':
@@ -770,6 +802,7 @@ class Parser:
 
             elif self.lexema == '(':
                 is_fun = True
+                self.next_token()
                 self.expresion()
 
                 while self.lexema == ',':

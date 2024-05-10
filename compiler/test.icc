@@ -1,19 +1,10 @@
-sea mut x:entero = 7;
+sea vec[4]:entero = [2, 3, 5, 7];
+sea i:entero = 0;
 
 fn principal()
 {
-        si x > 10
+        para x en 0..4
         {
-                imprimeln(x); 
+                imprimeln!(vec[i]);
         }
-        si x > 20
-        {
-                imprimeln(x);
-        }
-        sino
-        {
-                imprimeln(x);
-        }
-
-        imprimeln!("Adios");
 }
