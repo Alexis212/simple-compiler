@@ -1,6 +1,7 @@
 sea MAX:entero=10;
 sea mut vec[MAX]:entero = [33, 1, 3, 4, 19, 88, 15, 2, 100, 10];
-sea mut i, j, k, facto, num:entero;
+sea mut i, j, k, num:entero;
+sea mut facto:entero = 1;
 sea mut fibo, fiba: entero;
 sea mut nombre:alfabetico;
 
@@ -12,7 +13,7 @@ fn principal()
 
         para i en 1..=num
         {
-                facto = facto * i;
+                facto = facto + facto * i;
         }
         imprimeln!("Factorial(", num, ")=", facto);
 

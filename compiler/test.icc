@@ -1,1 +1,14 @@
-sea a, b, c, d:entero;
+sea mut i, num:entero;
+sea mut facto:entero = 1;
+
+fn principal()
+{
+        imprimeln("Dame un numero: ");
+        leer(num);
+
+        para i en 1..=num
+        {
+                facto = facto + facto * i;
+        }
+        imprimeln!("Factorial(", num, ")=", facto);
+}

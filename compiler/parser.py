@@ -18,7 +18,7 @@ class Parser:
     Codigo: Mapa de simbolos [clase, tipo, dim1, dim2].
     Clase: [V]ariable, [C]onstante, [I]ndefinido, [P]rocedimiento, [F]uncion, pa[R]ametro.
     Tipo: [E]ntero, [D]ecimal, p[A]labra, [L]ogico, [I]ndefinido.
-    Dim1: El tamaÃ±o del arreglo, los escalares tiene tamaÃ±o 1.
+    Dim1: El tamano del arreglo, los escalares tiene tamano 1.
     Dim2: Siempre en 0 por esta vez.
     OPR: Primitivas
     exit 0, 0
@@ -49,6 +49,8 @@ class Parser:
         self.opr_num = {'+': 2, '-': 3, '*': 4, '/': 5, '%': 6, '^': 7, '<': 9, '>': 10,
                         '<=': 11, '>=': 12, '!=': 13, '==': 14, '&&': 15, '||': 16}
 
+        self.error_count = 0
+
         self.tipo = ''
         self.lexema = ''
         self.linea = -1
@@ -72,10 +74,16 @@ class Parser:
             print(self.codigo)
 
     def error_tipo(self, esperado):
-        print(f"Error Sintactico: [{self.linea}:{self.columna}] '{self.lexema}'. Se esperaba un {esperado} y recibio un {self.tipo}.")
+        print(f"ERROR SINTACTICO: [{self.linea}:{self.columna}] '{self.lexema}'. Se esperaba un {esperado} y recibio un {self.tipo}.")
+        self.error_count += 1
 
     def error_lexema(self, esperado):
-        print(f"Error Sintactico: [{self.linea}:{self.columna}] '{self.lexema}'. Se esperaba '{esperado}' y recibio '{self.lexema}'.")
+        print(f"ERROR SINTACTICO: [{self.linea}:{self.columna}] '{self.lexema}'. Se esperaba '{esperado}' y recibio '{self.lexema}'.")
+        self.error_count += 1
+
+    def error_personalizado(self, tipo, msg):
+        print(f"ERROR {tipo} [{self.linea}:{self.columna}]", msg)
+        self.error_count += 1
 
     def next_token(self):
         self.tipo, self.lexema, self.linea, self.columna = next(self.lexer)
@@ -104,10 +112,14 @@ class Parser:
         return lines
 
     def make_file(self, name='out'):
-        with open(name + '.eje', 'w') as f:
-            f.writelines(self.make_tab())
-            f.write('@\n')
-            f.writelines(self.codigo)
+        if self.error_count:
+            print("Se ha encontrado mas de un error en el archivo. El codigo no se compilara.")
+
+        else:
+            with open(name + '.eje', 'w') as f:
+                f.writelines(self.make_tab())
+                f.write('@\n')
+                f.writelines(self.codigo)
 
     # NOTE: Axioma
     @show_level
@@ -148,7 +160,7 @@ class Parser:
             self.si_sino()
 
         if self.lexema == 'sino':
-            print("Error sintactico: 'sino' sin un bloque 'si' asociado.")
+            self.error_personalizado("SINTACTICO", "'sino' sin un bloque 'si' asociado.")
 
         if self.lexema == 'mientras':
             self.mientras()
@@ -237,10 +249,18 @@ class Parser:
 
     @show_level
     def declaracion(self):
+        sim = []
         ids = []
         leng = 0
 
         self.next_token()
+        if self.lexema == 'mut':
+            sim.append('V')
+            self.next_token()
+
+        else:
+            sim.append('C')
+
         if self.tipo == 'Identificador':
             ids.append(self.lexema)
 
@@ -254,8 +274,11 @@ class Parser:
             if self.tipo == 'Entero':
                 leng = int(self.lexema)
 
+            elif self.tipo == 'Identificador':
+                leng = int(self.mapa_simbolos[self.lexema][3])
+
             else:
-                self.error_tipo('Entero')
+                self.error_tipo('Entero o Identificador')
 
             self.next_token()
             if self.lexema != ']':
@@ -280,23 +303,84 @@ class Parser:
 
         self.tipo_variable()
         tipo = self.tipo_var[self.lexema]
+        sim.append(tipo)
+        sim.append(leng)
+        # sim.append(0)  # Check if is non vector constant
 
         self.next_token()
         if self.lexema == '=':
             self.next_token()
             if self.lexema == '[':
-                pass
+                sim.append(0)
 
-            else:
+                inc = 0
+                self.next_token()
+                self.add_line(f"LIT {inc}, 0")
+
                 self.expresion()
                 self.add_line(f"STO 0, {ids[0]}")
 
+                while self.lexema == ',':
+                    inc += 1
+                    self.add_line(f"LIT {inc}, 0")
+                    self.next_token()
+                    self.expresion()
+                    self.add_line(f"STO 0, {ids[0]}")
+
+                if self.lexema != ']':
+                    self.error_lexema(']')
+
+                if leng != inc + 1:
+                    self.error_personalizado("SEMANTICO", "Incompatible longitud definida y de inicializacion.")
+
+                self.mapa_simbolos[ids[0]] = sim
+                self.next_token()
+
+            else:
+                neg = False
+
+                if sim[0] == 'C':
+                    if self.lexema == '-':
+                        neg = True
+                        self.next_token()
+
+                    value = self.lexema
+                    if neg and self.tipo not in ['Entero', 'Decimal']:
+                        self.error_personalizado("SEMANTICO", "Tipo y operador incompatibles")
+
+                    sim.append(f"{'-' if neg else ''}{value}")
+                    self.add_line(f"LIT {value}, 0")
+                    if neg:
+                        self.add_line(f"OPR 0, 8")
+                    self.add_line(f"STO 0, {ids[0]}")
+                    self.next_token()  # Este no usa expresion, para antes
+
+                else:
+                    self.expresion()
+                    self.add_line(f"STO 0, {ids[0]}")
+
+                self.mapa_simbolos[ids[0]] = sim
+
         else:
+            sim.append(0)
+            if sim[0] == 'C':
+                self.error_personalizado("SEMANTICO", "Las constantes deben ser inicializadas.")
+
             def_val = {'E': 0, 'D': 0.0, 'A': '""', 'L': 'F'}[tipo]
 
-            for v in ids:
-                self.add_line(f"LIT {def_val}, 0")
-                self.add_line(f"STO 0, {v}")
+            if leng:
+                for i in range(leng):
+                    self.add_line(f"LIT {i}, 0")
+                    self.add_line(f"LIT {def_val}, 0")
+                    self.add_line(f"STO 0, {ids[0]}")
+
+                self.mapa_simbolos[ids[0]] = sim
+
+            else:
+                for v in ids:
+                    self.add_line(f"LIT {def_val}, 0")
+                    self.add_line(f"STO 0, {v}")
+                    self.mapa_simbolos[v] = sim.copy()
 
         if self.lexema != ';':
             self.error_lexema(';')
@@ -337,6 +421,7 @@ class Parser:
 
     @show_level
     def funcion(self):
+        li = self.line_inc
         func = []
         func.append('F')
 
@@ -416,7 +501,7 @@ class Parser:
             self.error_lexema("}")
 
         else:
-            func.append(self.line_inc)
+            func.append(li)
             func.append(0)
             func_id = '_' + func_id
             self.mapa_simbolos[func_id] = func
@@ -703,7 +788,6 @@ class Parser:
             self.termino()
             self.add_line(f"OPR 0, 7")
 
-    # FIXME: Generación de código
     # expr_7
     @show_level
     def termino(self):
