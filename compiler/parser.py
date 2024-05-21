@@ -81,8 +81,12 @@ class Parser:
         print(f"ERROR SINTACTICO: [{self.linea}:{self.columna}] '{self.lexema}'. Se esperaba '{esperado}' y recibio '{self.lexema}'.")
         self.error_count += 1
 
+    def error_semantico(self, msg):
+        print(f"ERROR SEMANTICO: [{self.linea}:{self.columna}]", msg)
+        self.error_count += 1
+
     def error_personalizado(self, tipo, msg):
-        print(f"ERROR {tipo} [{self.linea}:{self.columna}]", msg)
+        print(f"ERROR {tipo}: [{self.linea}:{self.columna}]", msg)
         self.error_count += 1
 
     def next_token(self):
@@ -203,6 +207,9 @@ class Parser:
             if self.tipo != 'Identificador':
                 self.error_tipo('Identificador')
 
+            if self.lexema not in self.mapa_simbolos:
+                self.error_semantico(f"La variable '{self.lexema}' no existe.")
+
             self.add_line(f"OPR {self.lexema}, 19")
 
             self.next_token()
@@ -262,6 +269,9 @@ class Parser:
             sim.append('C')
 
         if self.tipo == 'Identificador':
+            if self.lexema in self.mapa_simbolos:
+                self.error_lexema(f"La variable '{self.lexema}' no existe.")
+
             ids.append(self.lexema)
 
         else:
@@ -331,7 +341,7 @@ class Parser:
                     self.error_lexema(']')
 
                 if leng != inc + 1:
-                    self.error_personalizado("SEMANTICO", "Incompatible longitud definida y de inicializacion.")
+                    self.error_semantico("Incompatible longitud definida y de inicializacion.")
 
                 self.mapa_simbolos[ids[0]] = sim
                 self.next_token()
@@ -346,9 +356,14 @@ class Parser:
 
                     value = self.lexema
                     if neg and self.tipo not in ['Entero', 'Decimal']:
-                        self.error_personalizado("SEMANTICO", "Tipo y operador incompatibles")
+                        self.error_semantico("Tipo y operador incompatibles")
 
-                    sim.append(f"{'-' if neg else ''}{value}")
+                    if self.tipo == 'Logico':
+                        value = 'V' if value == 'verdadero' else 'F'
+
+                    else:
+                        sim.append(f"{'-' if neg else ''}{value}")
+
                     self.add_line(f"LIT {value}, 0")
                     if neg:
                         self.add_line(f"OPR 0, 8")
@@ -359,12 +374,13 @@ class Parser:
                     self.expresion()
                     self.add_line(f"STO 0, {ids[0]}")
 
+                sim.append(0)
                 self.mapa_simbolos[ids[0]] = sim
 
         else:
             sim.append(0)
             if sim[0] == 'C':
-                self.error_personalizado("SEMANTICO", "Las constantes deben ser inicializadas.")
+                self.error_semantico("Las constantes deben ser inicializadas.")
 
             def_val = {'E': 0, 'D': 0.0, 'A': '""', 'L': 'F'}[tipo]
 
@@ -518,7 +534,10 @@ class Parser:
             self.error_tipo('Identificador')
 
         id = self.lexema
+
         # self.mapa_simbolos[id] = ['V', 'E', '0', '0']
+        if id not in self.mapa_simbolos:
+            self.error_semantico(f"La variable '{id}' no existe.")
 
         self.next_token()
         if self.lexema != 'en':
@@ -613,7 +632,7 @@ class Parser:
     @show_level
     def mientras(self):
         ri = self.reg_inc
-        li = self.line_inc + 1
+        li = self.line_inc
         self.next_token()
         self.expresion()
 
@@ -816,7 +835,6 @@ class Parser:
 
                 if self.lexema != ']':
                     self.error_lexema(']')
-                    # Insetar ID?
 
                 else:
                     self.next_token()
@@ -836,6 +854,9 @@ class Parser:
                     self.next_token()
 
             if not is_fun:
+                if id not in self.mapa_simbolos:
+                    self.error_semantico(f"La variable '{id}' no existe.")
+
                 self.add_line(f'LOD {id}, 0')
 
         elif self.tipo in ['Entero', 'Decimal', 'Alfabetico']:

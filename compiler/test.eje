@@ -1,42 +1,57 @@
+p,V,L,0,#
+facto,V,E,0,#
 i,V,E,0,0,#
 num,V,E,0,0,#
-facto,V,E,0,#
-_RE0,I,I,27,0,#
-_principal,F,I,7,0,#
+nombre,V,A,0,0,#
+_RE0,I,I,29,0,#
+_principal,F,I,11,0,#
 _P,I,I,1,0,#
 @
-1 LIT 0, 0
-2 STO 0, i
-3 LIT 0, 0
-4 STO 0, num
-5 LIT 1, 0
-6 STO 0, facto
-7 LIT "Dame un numero: ", 0
-8 OPR 0, 20
-9 OPR num, 19
-10 LIT 1, 0
-11 STO 0, i
-12 LOD i, 0
-13 LOD num, 0
-14 OPR 0, 11
-15 JMC F, _RE0
-16 LOD facto, 0
-17 LOD facto, 0
-18 LOD i, 0
-19 OPR 0, 4
-20 OPR 0, 2
-21 STO 0, facto
-22 LOD i, 0
-23 LIT 1, 0
-24 OPR 0, 2
-25 STO 0, i
-26 JMP 0, 12
-27 LIT "Factorial(", 0
-28 OPR 0, 20
-29 LOD num, 0
+1 LIT V, 0
+2 STO 0, p
+3 LIT 1, 0
+4 STO 0, facto
+5 LIT 0, 0
+6 STO 0, i
+7 LIT 0, 0
+8 STO 0, num
+9 LIT "", 0
+10 STO 0, nombre
+11 LIT "Dame un numero: ", 0
+12 OPR 0, 20
+13 OPR num, 19
+14 LIT 1, 0
+15 STO 0, i
+16 LOD i, 0
+17 LOD num, 0
+18 OPR 0, 11
+19 JMC F, _RE0
+20 LOD facto, 0
+21 LOD i, 0
+22 OPR 0, 4
+23 STO 0, facto
+24 LOD i, 0
+25 LIT 1, 0
+26 OPR 0, 2
+27 STO 0, i
+28 JMP 0, 16
+29 LIT "Factorial(", 0
 30 OPR 0, 20
-31 LIT ")=", 0
-32 OPR 0, 20
-33 LOD facto, 0
-34 OPR 0, 21
-35 OPR 0, 0
+31 LOD i, 0
+32 LIT 1, 0
+33 OPR 0, 3
+34 OPR 0, 20
+35 LIT ") = ", 0
+36 OPR 0, 20
+37 LOD facto, 0
+38 OPR 0, 21
+39 LIT "Dime tu nombre: ", 0
+40 OPR 0, 20
+41 OPR nombre, 19
+42 LIT "Felicidades ", 0
+43 OPR 0, 20
+44 LOD nombre, 0
+45 OPR 0, 20
+46 LIT "! Ya pasaste compiladores!", 0
+47 OPR 0, 21
+48 OPR 0, 0

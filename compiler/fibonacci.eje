@@ -1,0 +1,70 @@
+fibo,V,E,0,#
+i,V,E,0,0,#
+num,V,E,0,0,#
+tmp,V,E,0,0,#
+fiba,V,E,0,0,#
+_RE1,I,I,21,0,#
+_RE0,I,I,21,0,#
+_RE3,I,I,28,0,#
+_RE2,I,I,28,0,#
+_RE4,I,I,47,0,#
+_principal,F,I,11,0,#
+_P,I,I,1,0,#
+@
+1 LIT 1, 0
+2 STO 0, fibo
+3 LIT 0, 0
+4 STO 0, i
+5 LIT 0, 0
+6 STO 0, num
+7 LIT 0, 0
+8 STO 0, tmp
+9 LIT 0, 0
+10 STO 0, fiba
+11 LIT "Dame un numero: ", 0
+12 OPR 0, 20
+13 OPR num, 19
+14 LOD num, 0
+15 LIT 0, 0
+16 OPR 0, 14
+17 JMC F, _RE1
+18 LIT 0, 0
+19 STO 0, fibo
+20 JMP 0, _RE0
+21 LOD num, 0
+22 LIT 1, 0
+23 OPR 0, 14
+24 JMC F, _RE3
+25 LIT 1, 0
+26 STO 0, fibo
+27 JMP 0, _RE2
+28 LOD num, 0
+29 STO 0, i
+30 LOD i, 0
+31 LIT 1, 0
+32 OPR 0, 10
+33 JMC F, _RE4
+34 LOD fibo, 0
+35 STO 0, tmp
+36 LOD fiba, 0
+37 LOD fibo, 0
+38 OPR 0, 2
+39 STO 0, fibo
+40 LOD tmp, 0
+41 STO 0, fiba
+42 LOD i, 0
+43 LIT 1, 0
+44 OPR 0, 3
+45 STO 0, i
+46 JMP 0, 30
+47 LIT "Factorial", 0
+48 OPR 0, 20
+49 LIT "(", 0
+50 OPR 0, 20
+51 LOD num, 0
+52 OPR 0, 20
+53 LIT ") = ", 0
+54 OPR 0, 20
+55 LOD fibo, 0
+56 OPR 0, 21
+57 OPR 0, 0

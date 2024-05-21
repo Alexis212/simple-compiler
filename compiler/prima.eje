@@ -1,0 +1,46 @@
+bPrimo,V,L,0,0,#
+i,V,E,0,0,#
+num,V,E,0,0,#
+_RE1,I,I,19,0,#
+_RE0,I,I,19,0,#
+_RE3,I,I,34,0,#
+_RE2,I,I,36,0,#
+_principal,F,I,7,0,#
+_P,I,I,1,0,#
+@
+1 LIT V, 0
+2 STO 0, bPrimo
+3 LIT 0, 0
+4 STO 0, i
+5 LIT 0, 0
+6 STO 0, num
+7 LIT "Dame un numero: ", 0
+8 OPR 0, 20
+9 OPR num, 19
+10 LOD num, 0
+11 LOD i, 0
+12 OPR 0, 6
+13 LIT 0, 0
+14 OPR 0, 14
+15 JMC F, _RE1
+16 LIT F, 0
+17 STO 0, bPrimo
+18 JMP 0, _RE0
+19 LOD i, 0
+20 LIT 1, 0
+21 OPR 0, 2
+22 STO 0, i
+23 LOD i, 0
+24 LOD num, 0
+25 OPR 0, 9
+26 JMC V, 10
+27 LOD num, 0
+28 OPR 0, 20
+29 LOD bPrimo, 0
+30 JMC F, _RE3
+31 LIT " es primo", 0
+32 OPR 0, 21
+33 JMP 0, _RE2
+34 LIT "NO es primo", 0
+35 OPR 0, 21
+36 OPR 0, 0

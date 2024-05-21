@@ -1,0 +1,20 @@
+sea mut bPrimo : logico = verdadero;
+sea mut i, num : entero;
+
+
+fn principal()
+{
+        imprimeln("Dame un numero: ");
+        leer(num);
+
+        ciclo
+        {
+                si (num % i == 0) { bPrimo = falso; }
+                i = i+1;
+        }
+        mientras i < num;
+
+        imprimeln(num);
+        si bPrimo { imprimeln!(" es primo"); }
+        sino { imprimeln!("NO es primo"); }
+}

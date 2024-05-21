@@ -1,0 +1,23 @@
+sea mut fibo : entero = 1;
+sea mut i, num, tmp, fiba : entero;
+
+
+fn principal()
+{
+        imprimeln("Dame un numero: ");
+        leer(num);
+
+        si num == 0 { fibo = 0; }
+        si num == 1 { fibo = 1; }
+
+        i = num;
+        mientras i > 1
+        {
+                tmp = fibo;
+                fibo = fiba + fibo;
+                fiba = tmp;
+
+                i = i - 1;
+        }
+        imprimeln!("Factorial", "(", num, ") = ", fibo);
+}

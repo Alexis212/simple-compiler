@@ -1,12 +1,9 @@
-sea mut p : logico = verdadero;
 sea mut facto : entero = 1;
 sea mut i, num : entero;
-sea mut nombre:alfabetico;
 
 
 fn principal()
 {
-        // Factorial
         imprimeln("Dame un numero: ");
         leer(num);
 
@@ -15,9 +12,4 @@ fn principal()
                 facto = facto * i; 
         }
         imprimeln!("Factorial(", i-1, ") = ", facto);
-
-        // Final
-        imprimeln("Dime tu nombre: ");
-        leer(nombre);
-        imprimeln!("Felicidades ", nombre, "! Ya pasaste compiladores!");
 }
