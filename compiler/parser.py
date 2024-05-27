@@ -60,6 +60,7 @@ class Parser:
         self.line_inc = 1
 
         self.mapa_simbolos = {}
+        self.constantes = {}
         self.codigo = []
 
     def __call__(self):
@@ -117,7 +118,7 @@ class Parser:
 
     def make_file(self, name='out'):
         if self.error_count:
-            print("Se ha encontrado mas de un error en el archivo. El codigo no se compilara.")
+            print(f"Se han encontrado {self.error_count} errores. El archivo no se compilara.")
 
         else:
             with open(name + '.eje', 'w') as f:
@@ -126,7 +127,6 @@ class Parser:
                 f.writelines(self.codigo)
 
     # NOTE: Axioma
-    # FIXME: Corregir salto en los bucles para, mientras, ciclo
     @show_level
     def programa(self):
         self.next_token()
@@ -262,6 +262,7 @@ class Parser:
         ids = []
         leng = 0
 
+        # Constante o Variable
         self.next_token()
         if self.lexema == 'mut':
             sim.append('V')
@@ -270,11 +271,13 @@ class Parser:
         else:
             sim.append('C')
 
+        # Simbolo
         if self.tipo == 'Identificador':
             if self.lexema in self.mapa_simbolos:
-                self.error_lexema(f"La variable '{self.lexema}' no existe.")
+                self.error_semantico(f"La variable '{self.lexema}' ya existe.")
 
-            ids.append(self.lexema)
+            else:
+                ids.append(self.lexema)
 
         else:
             self.error_lexema('Identificador')
@@ -282,32 +285,60 @@ class Parser:
         self.next_token()
         if self.lexema == '[':
             self.next_token()
-            # TODO: Agregar tipo 'Identificador'
-            if self.tipo == 'Entero':
+            if self.lexema == '0':
+                self.error_semantico("0 no es una longitud valida para un vector.")
+                
+            elif self.tipo == 'Entero':
                 leng = int(self.lexema)
 
             elif self.tipo == 'Identificador':
-                leng = int(self.mapa_simbolos[self.lexema][3])
+                pass
 
             else:
-                self.error_tipo('Entero o Identificador')
+                self.error_tipo("Entero o Identificador")
 
             self.next_token()
             if self.lexema != ']':
                 self.error_lexema(']')
-
             self.next_token()
 
-        else:
-            # TODO: Check if leng is equal to len(ids)
-            while self.lexema == ',':
-                self.next_token()
-                if self.tipo == 'Identificador':
-                    ids.append(self.lexema)
-
+        while self.lexema == ',':
+            self.next_token()
+            # Identificador
+            if self.tipo == 'Identificador':
+                if self.lexema in self.mapa_simbolos:
+                    self.error_semantico(f"La variable '{self.lexema}' ya existe.")
+    
                 else:
-                    self.error_tipo('Identificador')
+                    ids.append(self.lexema)
+    
+            else:
+                self.error_lexema('Identificador')
 
+            # Leng
+            leng_p = 0
+            if leng > 0:
+                self.next_token()
+                if self.lexema != '[':
+                    self.error_semantico("Intentando definir vectores con no vectores.")
+                    continue
+
+                self.next_token()
+                if self.tipo == 'Entero':
+                    leng_p = int(self.lexema)
+    
+                elif self.tipo == 'Identificador':
+                    pass
+    
+                else:
+                    self.error_tipo("Entero o Identificador")
+
+                if leng_p != leng:
+                    self.error_semantico("Vectores de longitudes distintas en la misma declaracion.")
+    
+                self.next_token()
+                if self.lexema != ']':
+                    self.error_lexema(']')
                 self.next_token()
 
         if self.lexema != ':':
@@ -315,91 +346,63 @@ class Parser:
 
         self.tipo_variable()
         tipo = self.tipo_var[self.lexema]
+
         sim.append(tipo)
         sim.append(leng)
-        # sim.append(0)  # Check if is non vector constant
+        sim.append(0)
 
         self.next_token()
         if self.lexema == '=':
-            self.next_token()
             if self.lexema == '[':
-                sim.append(0)
-
-                inc = 0
-                self.next_token()
-                self.add_line(f"LIT {inc}, 0")
-
-                self.expresion()
-                self.add_line(f"STO 0, {ids[0]}")
-
-                while self.lexema == ',':
-                    inc += 1
-                    self.add_line(f"LIT {inc}, 0")
-                    self.next_token()
-                    self.expresion()
-                    self.add_line(f"STO 0, {ids[0]}")
-
-                if self.lexema != ']':
-                    self.error_lexema(']')
-
-                if leng != inc + 1:
-                    self.error_semantico("Incompatible longitud definida y de inicializacion.")
-
-                self.mapa_simbolos[ids[0]] = sim
-                self.next_token()
+                values = []
 
             else:
-                # Cambiar neg por algo mas simple value = '{-}' + '{value}'
-                neg = False
-                if sim[0] == 'C':
-                    if self.lexema == '-':
-                        neg = True
-                        self.next_token()
+                value = ""
+                self.next_token()
+                if self.lexema == '-':
+                    value = '-'
+                    self.next_token()
 
-                    value = self.lexema
-                    if neg and self.tipo not in ['Entero', 'Decimal']:
-                        self.error_semantico("Tipo y operador incompatibles")
+                value += self.lexema
+                if self.tipo == 'Alfabetico':
+                    if value[0] == '-':
+                        self.error_semantico("Operador '-' en tipo incompatible.")
 
-                    if self.tipo == 'Logico':
-                        value = 'V' if value == 'verdadero' else 'F'
+                if self.tipo == 'Logico':
+                    if value[0] == '-':
+                        self.error_semantico("Operador '-' en tipo incompatible.")
 
                     else:
-                        # TODO: Mover esto a una tabla de simbolos aparte?
-                        sim.append(f"{'-' if neg else ''}{value}")
+                        value = 'V' if value == 'verdadero' else 'F'
 
-                    self.add_line(f"LIT {value}, 0")
-                    if neg:
-                        self.add_line(f"OPR 0, 8")
-                    self.add_line(f"STO 0, {ids[0]}")
-                    self.next_token()  # Este no usa expresion, para antes
+                for v in ids:
+                    self.add_line(f"LIR {value if value[0] != '-' else value[1:]}, 0")
+                    if value[0] == '-':
+                        self.add_line("OPR 0, 8")
+                    self.add_line(f"STO 0, {v}")
+                    self.mapa_simbolos[v] = sim.copy()
+                    self.constantes[v] = value
 
-                else:
-                    self.expresion()
-                    self.add_line(f"STO 0, {ids[0]}")
-
-                sim.append(0)
-                self.mapa_simbolos[ids[0]] = sim
-
+        # Default values
         else:
-            sim.append(0)
             if sim[0] == 'C':
-                self.error_semantico("Las constantes deben ser inicializadas.")
+                self.error_semantico("Constante no inicializada.")
 
-            def_val = {'E': 0, 'D': 0.0, 'A': '""', 'L': 'F'}[tipo]
+        def_val = {'E': 0, 'D': 0.0, 'A': '""', 'L': 'F'}[tipo]
 
-            if leng:
+        if leng:
+            for v in ids:
+                self.mapa_simbolos[v] = sim.copy()
                 for i in range(leng):
                     self.add_line(f"LIT {i}, 0")
                     self.add_line(f"LIT {def_val}, 0")
-                    self.add_line(f"STO 0, {ids[0]}")
-
-                self.mapa_simbolos[ids[0]] = sim
-
-            else:
-                for v in ids:
-                    self.add_line(f"LIT {def_val}, 0")
                     self.add_line(f"STO 0, {v}")
-                    self.mapa_simbolos[v] = sim.copy()
+
+        else:
+            for v in ids:
+                self.mapa_simbolos[v] = sim.copy()
+                self.add_line(f"LIT {def_val}, 0")
+                self.add_line(f"STO 0, {v}")
 
         if self.lexema != ';':
             self.error_lexema(';')
