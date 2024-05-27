@@ -1,0 +1,115 @@
+MAX,C,E,0,0,#
+i,V,E,0,0,#
+j,V,E,0,0,#
+tmp,V,E,0,0,#
+vec,V,E,10,0,#
+_RE3,I,I,72,0,#
+_RE2,I,I,72,0,#
+_RE1,I,I,77,0,#
+_RE0,I,I,82,0,#
+_RE4,I,I,102,0,#
+_principal,F,I,39,0,#
+_P,I,I,1,0,#
+@
+1 LIT 10, 0
+2 STO 0, MAX
+3 LIT 0, 0
+4 STO 0, i
+5 LIT 0, 0
+6 STO 0, j
+7 LIT 0, 0
+8 STO 0, tmp
+9 LIT 0, 0
+10 LIT 33, 0
+11 STO 0, vec
+12 LIT 1, 0
+13 LIT 1, 0
+14 STO 0, vec
+15 LIT 2, 0
+16 LIT 3, 0
+17 STO 0, vec
+18 LIT 3, 0
+19 LIT 4, 0
+20 STO 0, vec
+21 LIT 4, 0
+22 LIT 19, 0
+23 STO 0, vec
+24 LIT 5, 0
+25 LIT 88, 0
+26 STO 0, vec
+27 LIT 6, 0
+28 LIT 15, 0
+29 STO 0, vec
+30 LIT 7, 0
+31 LIT 2, 0
+32 STO 0, vec
+33 LIT 8, 0
+34 LIT 100, 0
+35 STO 0, vec
+36 LIT 9, 0
+37 LIT 10, 0
+38 STO 0, vec
+39 LIT 0, 0
+40 STO 0, i
+41 LOD i, 0
+42 LOD MAX, 0
+43 LIT 1, 0
+44 OPR 0, 3
+45 OPR 0, 9
+46 JMC F, _RE0
+47 LOD i, 0
+48 LIT 1, 0
+49 OPR 0, 2
+50 STO 0, j
+51 LOD j, 0
+52 LOD MAX, 0
+53 OPR 0, 9
+54 JMC F, _RE1
+55 LOD i, 0
+56 LOD vec, 0
+57 LOD j, 0
+58 LOD vec, 0
+59 OPR 0, 10
+60 JMC F, _RE3
+61 LOD i, 0
+62 LOD vec, 0
+63 STO 0, tmp
+64 LOD i, 0
+65 LOD j, 0
+66 LOD vec, 0
+67 STO 0, vec
+68 LOD j, 0
+69 LOD tmp, 0
+70 STO 0, vec
+71 JMP 0, _RE2
+72 LOD j, 0
+73 LIT 1, 0
+74 OPR 0, 2
+75 STO 0, j
+76 JMP 0, 51
+77 LOD i, 0
+78 LIT 1, 0
+79 OPR 0, 2
+80 STO 0, i
+81 JMP 0, 41
+82 LIT 0, 0
+83 STO 0, i
+84 LOD i, 0
+85 LOD MAX, 0
+86 OPR 0, 9
+87 JMC F, _RE4
+88 LIT "Vector[", 0
+89 OPR 0, 20
+90 LOD i, 0
+91 OPR 0, 20
+92 LIT "] = ", 0
+93 OPR 0, 20
+94 LOD i, 0
+95 LOD vec, 0
+96 OPR 0, 21
+97 LOD i, 0
+98 LIT 1, 0
+99 OPR 0, 2
+100 STO 0, i
+101 JMP 0, 84
+102 OPR 0, 0

@@ -34,7 +34,7 @@ fn principal()
         // Imprimir vector ordenado
         para i en 0..MAX
         {
-                imprimeln!("Vector[", i, "]=", vec[i]);
+                imprimeln("Vector[", i, "]=", vec[i]);
         }
         imprimeln!("]");
 

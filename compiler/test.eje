@@ -1,14 +1,18 @@
-p,V,L,0,#
-facto,V,E,0,#
+bPrimo,V,L,0,0,#
+facto,V,E,0,0,#
 i,V,E,0,0,#
 num,V,E,0,0,#
 nombre,V,A,0,0,#
 _RE0,I,I,29,0,#
+_RE2,I,I,55,0,#
+_RE1,I,I,55,0,#
+_RE4,I,I,72,0,#
+_RE3,I,I,74,0,#
 _principal,F,I,11,0,#
 _P,I,I,1,0,#
 @
 1 LIT V, 0
-2 STO 0, p
+2 STO 0, bPrimo
 3 LIT 1, 0
 4 STO 0, facto
 5 LIT 0, 0
@@ -45,13 +49,48 @@ _P,I,I,1,0,#
 36 OPR 0, 20
 37 LOD facto, 0
 38 OPR 0, 21
-39 LIT "Dime tu nombre: ", 0
+39 LIT "Dame un numero: ", 0
 40 OPR 0, 20
-41 OPR nombre, 19
-42 LIT "Felicidades ", 0
-43 OPR 0, 20
-44 LOD nombre, 0
-45 OPR 0, 20
-46 LIT "! Ya pasaste compiladores!", 0
-47 OPR 0, 21
-48 OPR 0, 0
+41 OPR num, 19
+42 LIT 2, 0
+43 STO 0, i
+44 LOD i, 0
+45 OPR 0, 21
+46 LOD num, 0
+47 LOD i, 0
+48 OPR 0, 6
+49 LIT 0, 0
+50 OPR 0, 14
+51 JMC F, _RE2
+52 LIT F, 0
+53 STO 0, bPrimo
+54 JMP 0, _RE1
+55 LOD i, 0
+56 LIT 1, 0
+57 OPR 0, 2
+58 STO 0, i
+59 LOD i, 0
+60 LOD num, 0
+61 OPR 0, 9
+62 LOD bPrimo, 0
+63 OPR 0, 15
+64 JMC V, 44
+65 LOD num, 0
+66 OPR 0, 20
+67 LOD bPrimo, 0
+68 JMC F, _RE4
+69 LIT " es primo", 0
+70 OPR 0, 21
+71 JMP 0, _RE3
+72 LIT " NO es primo", 0
+73 OPR 0, 21
+74 LIT "Dime tu nombre: ", 0
+75 OPR 0, 20
+76 OPR nombre, 19
+77 LIT "Felicidades ", 0
+78 OPR 0, 20
+79 LOD nombre, 0
+80 OPR 0, 20
+81 LIT "! Ya pasaste compiladores!", 0
+82 OPR 0, 21
+83 OPR 0, 0

@@ -1,4 +1,4 @@
-sea mut p : logico = verdadero;
+sea mut bPrimo : logico = verdadero;
 sea mut facto : entero = 1;
 sea mut i, num : entero;
 sea mut nombre:alfabetico;
@@ -15,6 +15,23 @@ fn principal()
                 facto = facto * i; 
         }
         imprimeln!("Factorial(", i-1, ") = ", facto);
+
+        // Numero Primo
+        imprimeln("Dame un numero: ");
+        leer(num);
+
+        i = 2;
+        ciclo
+        {
+                imprimeln!(i);
+                si (num % i == 0) { bPrimo = falso; }
+                i = i+1;
+        }
+        mientras i < num && bPrimo;
+
+        imprimeln(num);
+        si bPrimo { imprimeln!(" es primo"); }
+        sino { imprimeln!(" NO es primo"); }
 
         // Final
         imprimeln("Dime tu nombre: ");

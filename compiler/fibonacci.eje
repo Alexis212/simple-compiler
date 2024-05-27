@@ -1,12 +1,12 @@
-fibo,V,E,0,#
+fibo,V,E,0,0,#
 i,V,E,0,0,#
 num,V,E,0,0,#
 tmp,V,E,0,0,#
 fiba,V,E,0,0,#
-_RE1,I,I,21,0,#
-_RE0,I,I,21,0,#
-_RE3,I,I,28,0,#
-_RE2,I,I,28,0,#
+_RE1,I,I,23,0,#
+_RE0,I,I,23,0,#
+_RE3,I,I,30,0,#
+_RE2,I,I,30,0,#
 _RE4,I,I,47,0,#
 _principal,F,I,11,0,#
 _P,I,I,1,0,#
@@ -25,21 +25,21 @@ _P,I,I,1,0,#
 12 OPR 0, 20
 13 OPR num, 19
 14 LOD num, 0
-15 LIT 0, 0
-16 OPR 0, 14
-17 JMC F, _RE1
-18 LIT 0, 0
-19 STO 0, fibo
-20 JMP 0, _RE0
-21 LOD num, 0
-22 LIT 1, 0
-23 OPR 0, 14
-24 JMC F, _RE3
-25 LIT 1, 0
-26 STO 0, fibo
-27 JMP 0, _RE2
-28 LOD num, 0
-29 STO 0, i
+15 STO 0, i
+16 LOD num, 0
+17 LIT 0, 0
+18 OPR 0, 14
+19 JMC F, _RE1
+20 LIT 0, 0
+21 STO 0, fibo
+22 JMP 0, _RE0
+23 LOD num, 0
+24 LIT 1, 0
+25 OPR 0, 14
+26 JMC F, _RE3
+27 LIT 1, 0
+28 STO 0, fibo
+29 JMP 0, _RE2
 30 LOD i, 0
 31 LIT 1, 0
 32 OPR 0, 10

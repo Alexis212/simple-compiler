@@ -116,10 +116,16 @@ void exec() {
     if( pc >= 0 ) pc = tabsim[pc].di1;
     while ( pc >= 0 && pc <= conp ) {
         if (bExe) { //para Debug
+            if (pila.empty())
+                cout << "Pila T: #";
+            else
+                cout << "Pila T: " << pila.top();
+
             cout << "\npc => " << pc << " "
                  << prgm[pc].mnemo << " "
                  << prgm[pc].dir1 << ","
                  << prgm[pc].dir2 << endl;
+
             getchar();
         }
 

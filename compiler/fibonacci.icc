@@ -7,10 +7,10 @@ fn principal()
         imprimeln("Dame un numero: ");
         leer(num);
 
+        i = num;
         si num == 0 { fibo = 0; }
         si num == 1 { fibo = 1; }
 
-        i = num;
         mientras i > 1
         {
                 tmp = fibo;

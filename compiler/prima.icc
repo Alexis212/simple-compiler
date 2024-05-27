@@ -1,5 +1,6 @@
 sea mut bPrimo : logico = verdadero;
-sea mut i, num : entero;
+sea mut num : entero;
+sea mut i : entero = 2;
 
 
 fn principal()
@@ -12,9 +13,9 @@ fn principal()
                 si (num % i == 0) { bPrimo = falso; }
                 i = i+1;
         }
-        mientras i < num;
+        mientras i < num && bPrimo;
 
         imprimeln(num);
         si bPrimo { imprimeln!(" es primo"); }
-        sino { imprimeln!("NO es primo"); }
+        sino { imprimeln!(" NO es primo"); }
 }

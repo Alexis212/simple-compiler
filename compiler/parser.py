@@ -18,8 +18,8 @@ class Parser:
     Codigo: Mapa de simbolos [clase, tipo, dim1, dim2].
     Clase: [V]ariable, [C]onstante, [I]ndefinido, [P]rocedimiento, [F]uncion, pa[R]ametro.
     Tipo: [E]ntero, [D]ecimal, p[A]labra, [L]ogico, [I]ndefinido.
-    Dim1: El tamano del arreglo, los escalares tiene tamano 1.
-    Dim2: Siempre en 0 por esta vez.
+    Dim1: El tamano del arreglo, los escalares tiene tamano 0.
+    Dim2: Siempre es 0 para esta implementacion.
     OPR: Primitivas
     exit 0, 0
     regresa 0, 1
@@ -126,6 +126,7 @@ class Parser:
                 f.writelines(self.codigo)
 
     # NOTE: Axioma
+    # FIXME: Corregir salto en los bucles para, mientras, ciclo
     @show_level
     def programa(self):
         self.next_token()
@@ -254,6 +255,7 @@ class Parser:
         #     self.error_tipo('Palabra Reservada')
         #     self.next_token()
 
+    # TODO: Refactorizar un par de cosas
     @show_level
     def declaracion(self):
         sim = []
@@ -347,8 +349,8 @@ class Parser:
                 self.next_token()
 
             else:
+                # Cambiar neg por algo mas simple value = '{-}' + '{value}'
                 neg = False
-
                 if sim[0] == 'C':
                     if self.lexema == '-':
                         neg = True
@@ -362,6 +364,7 @@ class Parser:
                         value = 'V' if value == 'verdadero' else 'F'
 
                     else:
+                        # TODO: Mover esto a una tabla de simbolos aparte?
                         sim.append(f"{'-' if neg else ''}{value}")
 
                     self.add_line(f"LIT {value}, 0")
@@ -408,21 +411,22 @@ class Parser:
             self.error_lexema('(')
 
         self.next_token()
-        self.expresion()
-
-        while self.lexema == ',':
-            self.add_line("OPR 0, 20")
-            self.next_token()
-            self.expresion()
-
-        if self.lexema != ')':
-            self.error_lexema(')')
-
-        if new_line:
-            self.add_line("OPR 0, 21")
+        if self.lexema == ')':
+            self.add_line('LIT "", 0')
+            self.add_line("OPR 0, 21" if new_line else "OPR 0, 20")
 
         else:
-            self.add_line("OPR 0, 20")
+            self.expresion()
+
+            while self.lexema == ',':
+                self.add_line("OPR 0, 20")
+                self.next_token()
+                self.expresion()
+
+            if self.lexema != ')':
+                self.error_lexema(')')
+
+            self.add_line("OPR 0, 21" if new_line else "OPR 0, 20")
 
         self.next_token()
         if self.lexema != ';':
@@ -605,7 +609,7 @@ class Parser:
     # Do - While
     @show_level
     def ciclo(self):
-        li = self.line_inc + 1
+        li = self.line_inc
         self.next_token()
         if self.lexema == '{':
             self.bloque()
@@ -735,6 +739,7 @@ class Parser:
         if self.lexema != ';':
             self.error_lexema(";")
 
+    # TODO: Hacer analisis semantico de tipos
     @show_level
     def expresion(self):
         self.disyuncion()
@@ -808,6 +813,7 @@ class Parser:
             self.add_line(f"OPR 0, 7")
 
     # expr_7
+    # TODO: Mover prioridad de '!' justo despues de && y ||
     @show_level
     def termino(self):
         unary = 0
@@ -860,10 +866,16 @@ class Parser:
                 self.add_line(f'LOD {id}, 0')
 
         elif self.tipo in ['Entero', 'Decimal', 'Alfabetico']:
+            if unary:
+                self.error_semantico("Operador '-' en tipo incompatible.")
+
             self.add_line(f'LIT {self.lexema}, 0')
             self.next_token()
 
         elif self.tipo == 'Logico':
+            if unary:
+                self.error_semantico("Operador '-' en tipo incompatible.")
+
             temp = 'V' if self.lexema == 'verdadero' else 'F'
             self.add_line(f'LIT {temp}, 0')
             self.next_token()
