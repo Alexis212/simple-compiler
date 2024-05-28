@@ -5,17 +5,33 @@ sea mut i : entero = 2;
 
 fn principal()
 {
-        imprimeln("Dame un numero: ");
-        leer(num);
+    imprimeln("Dame un numero: ");
+    leer(num);
 
-        ciclo
-        {
-                si (num % i == 0) { bPrimo = falso; }
-                i = i+1;
-        }
-        mientras i < num && bPrimo;
+    si num < 2
+    {
+        bPrimo = falso;
+    }
 
-        imprimeln(num);
-        si bPrimo { imprimeln!(" es primo"); }
-        sino { imprimeln!(" NO es primo"); }
+    ciclo
+    {
+        si num % i == 0 { bPrimo = falso; }
+        i = i+1;
+    }
+    mientras i < num;
+
+    // FIXME: this
+    // sino si num > 2
+    // {
+    //     ciclo
+    //     {
+    //         si num % i == 0 { bPrimo = falso; }
+    //         i = i+1;
+    //     }
+    //     mientras i < num;
+    // }
+
+    imprimeln(num);
+    si bPrimo { imprimeln!(" es primo"); }
+    sino { imprimeln!(" NO es primo"); }
 }

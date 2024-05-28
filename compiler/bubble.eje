@@ -3,12 +3,12 @@ i,V,E,0,0,#
 j,V,E,0,0,#
 tmp,V,E,0,0,#
 vec,V,E,10,0,#
-_RE3,I,I,72,0,#
-_RE2,I,I,72,0,#
-_RE1,I,I,77,0,#
-_RE0,I,I,82,0,#
-_RE4,I,I,102,0,#
-_principal,F,I,39,0,#
+_RE3,I,I,73,0,#
+_RE2,I,I,73,0,#
+_RE1,I,I,78,0,#
+_RE0,I,I,83,0,#
+_RE4,I,I,103,0,#
+_principal,F,I,40,0,#
 _P,I,I,1,0,#
 @
 1 LIT 10, 0
@@ -49,67 +49,68 @@ _P,I,I,1,0,#
 36 LIT 9, 0
 37 LIT 10, 0
 38 STO 0, vec
-39 LIT 0, 0
-40 STO 0, i
-41 LOD i, 0
-42 LOD MAX, 0
-43 LIT 1, 0
-44 OPR 0, 3
-45 OPR 0, 9
-46 JMC F, _RE0
-47 LOD i, 0
-48 LIT 1, 0
-49 OPR 0, 2
-50 STO 0, j
-51 LOD j, 0
-52 LOD MAX, 0
-53 OPR 0, 9
-54 JMC F, _RE1
-55 LOD i, 0
-56 LOD vec, 0
-57 LOD j, 0
-58 LOD vec, 0
-59 OPR 0, 10
-60 JMC F, _RE3
-61 LOD i, 0
-62 LOD vec, 0
-63 STO 0, tmp
-64 LOD i, 0
-65 LOD j, 0
-66 LOD vec, 0
-67 STO 0, vec
-68 LOD j, 0
-69 LOD tmp, 0
-70 STO 0, vec
-71 JMP 0, _RE2
-72 LOD j, 0
-73 LIT 1, 0
-74 OPR 0, 2
-75 STO 0, j
-76 JMP 0, 51
-77 LOD i, 0
-78 LIT 1, 0
-79 OPR 0, 2
-80 STO 0, i
-81 JMP 0, 41
-82 LIT 0, 0
-83 STO 0, i
-84 LOD i, 0
-85 LOD MAX, 0
-86 OPR 0, 9
-87 JMC F, _RE4
-88 LIT "Vector[", 0
-89 OPR 0, 20
-90 LOD i, 0
-91 OPR 0, 20
-92 LIT "] = ", 0
-93 OPR 0, 20
-94 LOD i, 0
-95 LOD vec, 0
-96 OPR 0, 21
-97 LOD i, 0
-98 LIT 1, 0
-99 OPR 0, 2
-100 STO 0, i
-101 JMP 0, 84
-102 OPR 0, 0
+39 JMP 0, _principal
+40 LIT 0, 0
+41 STO 0, i
+42 LOD i, 0
+43 LOD MAX, 0
+44 LIT 1, 0
+45 OPR 0, 3
+46 OPR 0, 9
+47 JMC F, _RE0
+48 LOD i, 0
+49 LIT 1, 0
+50 OPR 0, 2
+51 STO 0, j
+52 LOD j, 0
+53 LOD MAX, 0
+54 OPR 0, 9
+55 JMC F, _RE1
+56 LOD i, 0
+57 LOD vec, 0
+58 LOD j, 0
+59 LOD vec, 0
+60 OPR 0, 10
+61 JMC F, _RE3
+62 LOD i, 0
+63 LOD vec, 0
+64 STO 0, tmp
+65 LOD i, 0
+66 LOD j, 0
+67 LOD vec, 0
+68 STO 0, vec
+69 LOD j, 0
+70 LOD tmp, 0
+71 STO 0, vec
+72 JMP 0, _RE2
+73 LOD j, 0
+74 LIT 1, 0
+75 OPR 0, 2
+76 STO 0, j
+77 JMP 0, 52
+78 LOD i, 0
+79 LIT 1, 0
+80 OPR 0, 2
+81 STO 0, i
+82 JMP 0, 42
+83 LIT 0, 0
+84 STO 0, i
+85 LOD i, 0
+86 LOD MAX, 0
+87 OPR 0, 9
+88 JMC F, _RE4
+89 LIT "Vector[", 0
+90 OPR 0, 20
+91 LOD i, 0
+92 OPR 0, 20
+93 LIT "] = ", 0
+94 OPR 0, 20
+95 LOD i, 0
+96 LOD vec, 0
+97 OPR 0, 21
+98 LOD i, 0
+99 LIT 1, 0
+100 OPR 0, 2
+101 STO 0, i
+102 JMP 0, 85
+103 OPR 0, 0

@@ -1,0 +1,7 @@
+sea x : entero = 15;
+
+fn principal()
+{
+    si x < 18 { imprimeln!("Eres menor de edad"); }
+    sino si x > 18 { imprimeln!("Eres menor de edad"); }
+}

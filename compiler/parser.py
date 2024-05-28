@@ -130,21 +130,14 @@ class Parser:
     @show_level
     def programa(self):
         self.next_token()
+        while self.lexema == 'sea':
+            self.declaracion()
+            self.next_token()
 
-        while self.lexema in ['sea', 'fn'] \
-              or self.tipo in ["Identificador"]:
-
-            if self.lexema == 'sea':
-                self.declaracion()
-
-            if self.lexema == 'fn':
-                self.funcion()
-
-            if self.tipo == "Identificador":
-                temp = self.lexema
-                self.next_token()
-                self.asignacion(temp)
-
+        self.add_line("JMP 0, _principal")
+        
+        while self.lexema == 'fn':
+            self.funcion()
             self.next_token()
 
     @show_level
@@ -157,10 +150,6 @@ class Parser:
 
     @show_level
     def sentencia(self):
-        # if self.lexema == 'sea':
-        #     self.declaracion()
-        #     self.next_token()
-
         if self.lexema == 'si':
             self.si_sino()
 
@@ -255,7 +244,6 @@ class Parser:
         #     self.error_tipo('Palabra Reservada')
         #     self.next_token()
 
-    # TODO: Refactorizar un par de cosas
     @show_level
     def declaracion(self):
         sim = []
@@ -291,8 +279,20 @@ class Parser:
             elif self.tipo == 'Entero':
                 leng = int(self.lexema)
 
+            # TODO: Capturar los casos de error - Esto funciona?
             elif self.tipo == 'Identificador':
-                pass
+                if self.lexema not in self.mapa_simbolos:
+                    self.error_semantico(f"El simbolo '{self.lexema}' no existe.")
+
+                else:
+                    if self.mapa_simbolos[self.lexema][1] != 'E':
+                        self.error_semantico("Tipo de constante incorrecto.")
+
+                    elif int( self.constantes[self.lexema] ) < 1:
+                        self.error_semantico("Valor de constante incorrecto.")
+
+                    else:
+                        leng = int( self.constantes[self.lexema] )
 
             else:
                 self.error_tipo("Entero o Identificador")
@@ -315,10 +315,11 @@ class Parser:
             else:
                 self.error_lexema('Identificador')
 
+            self.next_token()
+
             # Leng
             leng_p = 0
             if leng > 0:
-                self.next_token()
                 if self.lexema != '[':
                     self.error_semantico("Intentando definir vectores con no vectores.")
                     continue
@@ -327,8 +328,20 @@ class Parser:
                 if self.tipo == 'Entero':
                     leng_p = int(self.lexema)
     
+                # TODO: Capturar los casos de error - Esto funciona?
                 elif self.tipo == 'Identificador':
-                    pass
+                    if self.lexema not in self.mapa_simbolos:
+                        self.error_semantico(f"El simbolo '{self.lexema}' no existe.")
+    
+                    else:
+                        if self.mapa_simbolos[self.lexema][1] != 'E':
+                            self.error_semantico("Tipo de constante incorrecto.")
+    
+                        elif int( self.constantes[self.lexema] ) < 1:
+                            self.error_semantico("Valor de constante incorrecto.")
+    
+                        else:
+                            leng_p = int( self.constantes[self.lexema] )
     
                 else:
                     self.error_tipo("Entero o Identificador")
@@ -353,56 +366,118 @@ class Parser:
 
         self.next_token()
         if self.lexema == '=':
+            self.next_token()
             if self.lexema == '[':
-                values = []
+                i = 0
+                value = ''
+                while True:
+                    self.next_token()
+                    if sim[1] in ['E', 'D']:
+                        if self.lexema == '-':
+                            value += '-'
+                            self.next_token()
+    
+                        if self.tipo in ['Entero', 'Decimal']:
+                            value += self.lexema
+    
+                        else:
+                            self.error_tipo('Entero' if sim[1] == 'E' else 'Decimal')
+    
+                    elif sim[1] == 'A':
+                        if self.tipo == 'Alfabetico':
+                            self.error_lexema('Alfabetico')
+    
+                        else:
+                            value = self.lexema
+    
+                    elif sim[1] == 'L':
+                        if self.tipo == 'Logico':
+                            value = 'V' if self.lexema == 'verdadero' else 'F'
+    
+                        else:
+                            self.error_tipo('Logico')
+    
+                    else:
+                        self.error_tipo('Literal')
+
+                    for v in ids:
+                        self.add_line(f"LIT {i}, 0")
+                        self.add_line(f"LIT {value if value[0] != '-' else value[1:]}, 0")
+                        if value[0] == '-':
+                            self.add_line("OPR 0, 8")
+                        self.add_line(f"STO 0, {v}")
+                        self.mapa_simbolos[v] = sim.copy()
+                        self.constantes[v] = value
+
+                    i += 1
+                    value = ''
+                    self.next_token()
+                    if self.lexema != ',':
+                        break
+
+                if self.lexema != ']':
+                    self.error_lexema(']')
 
             else:
                 value = ""
-                self.next_token()
-                if self.lexema == '-':
-                    value = '-'
-                    self.next_token()
+                if sim[1] in ['E', 'D']:
+                    if self.lexema == '-':
+                        value += '-'
+                        self.next_token()
 
-                value += self.lexema
-                if self.tipo == 'Alfabetico':
-                    if value[0] == '-':
-                        self.error_semantico("Operador '-' en tipo incompatible.")
-
-                if self.tipo == 'Logico':
-                    if value[0] == '-':
-                        self.error_semantico("Operador '-' en tipo incompatible.")
+                    if self.tipo in ['Entero', 'Decimal']:
+                        value += self.lexema
 
                     else:
-                        value = 'V' if value == 'verdadero' else 'F'
+                        self.error_tipo('Entero' if sim[1] == 'E' else 'Decimal')
+
+                elif sim[1] == 'A':
+                    if self.tipo == 'Alfabetico':
+                        self.error_lexema('Alfabetico')
+
+                    else:
+                        value = self.lexema
+
+                elif sim[1] == 'L':
+                    if self.tipo == 'Logico':
+                        value = 'V' if self.lexema == 'verdadero' else 'F'
+
+                    else:
+                        self.error_tipo('Logico')
+
+                else:
+                    self.error_tipo('Literal')
 
                 for v in ids:
-                    self.add_line(f"LIR {value if value[0] != '-' else value[1:]}, 0")
+                    self.add_line(f"LIT {value if value[0] != '-' else value[1:]}, 0")
                     if value[0] == '-':
                         self.add_line("OPR 0, 8")
                     self.add_line(f"STO 0, {v}")
                     self.mapa_simbolos[v] = sim.copy()
                     self.constantes[v] = value
 
+            self.next_token()
+
         # Default values
         else:
             if sim[0] == 'C':
                 self.error_semantico("Constante no inicializada.")
 
-        def_val = {'E': 0, 'D': 0.0, 'A': '""', 'L': 'F'}[tipo]
+            def_val = {'E': 0, 'D': 0.0, 'A': '""', 'L': 'F'}[tipo]
 
-        if leng:
-            for v in ids:
-                self.mapa_simbolos[v] = sim.copy()
-                for i in range(leng):
-                    self.add_line(f"LIT {i}, 0")
+            if leng:
+                for v in ids:
+                    self.mapa_simbolos[v] = sim.copy()
+                    for i in range(leng):
+                        self.add_line(f"LIT {i}, 0")
+                        self.add_line(f"LIT {def_val}, 0")
+                        self.add_line(f"STO 0, {v}")
+
+            else:
+                for v in ids:
+                    self.mapa_simbolos[v] = sim.copy()
                     self.add_line(f"LIT {def_val}, 0")
                     self.add_line(f"STO 0, {v}")
-
-        else:
-            for v in ids:
-                self.mapa_simbolos[v] = sim.copy()
-                self.add_line(f"LIT {def_val}, 0")
-                self.add_line(f"STO 0, {v}")
 
         if self.lexema != ';':
             self.error_lexema(';')
@@ -682,6 +757,9 @@ class Parser:
 
         self.add_line(f"JMP 0, _RE{ri}")
         self.mapa_simbolos[f"_RE{self.reg_inc}"] = ['I', 'I', self.line_inc, '0']
+
+        # NOTE: Esto es un parche
+        exist_sino = True
         # sino si
         if self.lexema == 'sino':
             self.next_token()
@@ -701,11 +779,14 @@ class Parser:
                     self.mapa_simbolos[f"_RE{self.reg_inc}"] = ['I', 'I', self.line_inc, '0']
                     if self.lexema == 'sino':
                         self.next_token()
+
+                    else:
+                        exist_sino = False
  
                 else:
                     self.error_lexema('{')
 
-            # ultimo sino
+            # sino
             if self.lexema == '{':
                 self.bloque()
 
@@ -714,8 +795,8 @@ class Parser:
 
                 self.next_token()
 
-            else:
-                self.error_lexema('}')
+            elif exist_sino:
+                self.error_lexema('{')
 
         self.mapa_simbolos[f"_RE{ri}"] = ['I', 'I', self.line_inc, '0']
         self.reg_inc += 1

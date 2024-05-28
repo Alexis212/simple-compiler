@@ -1,0 +1,25 @@
+x,C,E,0,0,#
+_RE1,I,I,11,0,#
+_RE2,I,I,18,0,#
+_RE0,I,I,18,0,#
+_principal,F,I,4,0,#
+_P,I,I,1,0,#
+@
+1 LIT 15, 0
+2 STO 0, x
+3 JMP 0, _principal
+4 LOD x, 0
+5 LIT 18, 0
+6 OPR 0, 9
+7 JMC F, _RE1
+8 LIT "Eres menor de edad", 0
+9 OPR 0, 21
+10 JMP 0, _RE0
+11 LOD x, 0
+12 LIT 18, 0
+13 OPR 0, 10
+14 JMC F, _RE2
+15 LIT "Eres menor de edad", 0
+16 OPR 0, 21
+17 JMP 0, _RE0
+18 OPR 0, 0
