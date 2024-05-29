@@ -12,6 +12,35 @@ def show_level(func):
     return inner_function
 
 
+def tabla_tipos(a, b, opr):
+    if a == 'E':
+        if opr in '+-*^' and b in 'ED' :
+            return b
+
+        if opr == '%' and b == 'E':
+            return 'E'
+
+        if opr in ['<', '>', '==', '!=', '<=', '>='] and b in 'ED':
+            return 'L'
+
+    if a == 'D':
+        if opr in '+-*^' and b in 'ED' :
+            return 'D'
+
+        if opr in ['<', '>', '==', '!=', '<=', '>='] and b in 'ED':
+            return 'L'
+
+    if a == 'A':
+        if opr in ['==', '!=']:
+            return 'L'
+
+    if a == 'L':
+        if opr in ['&&', '||', '==', '!=']:
+            return 'L'
+
+    return 'I'
+
+
 class Parser:
     """Valida el orden de los tokens (comprueba la gramatica).
     Simbolos: Diccionario de variables y valores.
@@ -48,6 +77,8 @@ class Parser:
         self.tipo_var = {'entero': 'E', 'decimal': 'D', 'alfabetico': 'A', 'logico': 'L'}
         self.opr_num = {'+': 2, '-': 3, '*': 4, '/': 5, '%': 6, '^': 7, '<': 9, '>': 10,
                         '<=': 11, '>=': 12, '!=': 13, '==': 14, '&&': 15, '||': 16}
+
+        self.pila_tipos = []
 
         self.error_count = 0
 
@@ -108,6 +139,15 @@ class Parser:
     def add_var(self, var, value):
         self.add_line(f"LIT {value}, 0")
         self.add_line(f"STO 0, {var}")
+
+    def check_types(self, opr):
+        a = self.pila_tipos.pop()
+        b = self.pila_tipos.pop()
+        c = tabla_tipos(a, b, opr)
+        self.pila_tipos.append(c)
+
+        if c == 'I':
+            self.error_semantico(f"Operador '{opr}' aplicado con tipos invalidos: '{a}' y '{b}'")
 
     def make_tab(self):
         lines = []
@@ -218,6 +258,8 @@ class Parser:
             if self.lexema == '=' or self.lexema == '[':
                 self.asignacion(temp)
 
+            # Llamada de funcion
+            # FIXME: Agregar expresiones
             if self.lexema == '(':
                 self.next_token()
                 if self.tipo in ["Entero", "Decimal", "Logico", "Alfabetico", "Identificador"]:
@@ -419,34 +461,28 @@ class Parser:
                     self.error_lexema(']')
 
             else:
-                value = ""
-                if sim[1] in ['E', 'D']:
-                    if self.lexema == '-':
-                        value += '-'
-                        self.next_token()
-
-                    if self.tipo in ['Entero', 'Decimal']:
-                        value += self.lexema
+                value = ''
+                # TODO: Verificacion semantica de tipos
+                if self.lexema == '-':
+                    self.next_token()
+                    if self.tipo in ['Logico', 'Alfabetico']:
+                        self.error_semantico("Operador '-' en tipo incompatible.")
 
                     else:
-                        self.error_tipo('Entero' if sim[1] == 'E' else 'Decimal')
+                        value = '-'
 
-                elif sim[1] == 'A':
-                    if self.tipo == 'Alfabetico':
-                        self.error_lexema('Alfabetico')
+                if self.tipo == 'Logico':
+                    value = 'V' if self.lexema == 'verdadero' else 'F'
 
-                    else:
-                        value = self.lexema
-
-                elif sim[1] == 'L':
-                    if self.tipo == 'Logico':
-                        value = 'V' if self.lexema == 'verdadero' else 'F'
-
-                    else:
-                        self.error_tipo('Logico')
+                elif self.tipo in ['Alfabetico', 'Entero', 'Decimal']:
+                    value += self.lexema
 
                 else:
-                    self.error_tipo('Literal')
+                    self.error_lexema('Literal o Variable')
+
+                tipos = {'E': 'Entero', 'D': 'Decimal', 'A': 'Alfabetico', 'L': 'Logico'}
+                if self.tipo[0] != sim[1]:
+                    self.error_semantico(f"Asignando un '{self.tipo}' a una variable de tipo '{tipos[ sim[1] ]}'.")
 
                 for v in ids:
                     self.add_line(f"LIT {value if value[0] != '-' else value[1:]}, 0")
@@ -504,6 +540,7 @@ class Parser:
             if self.lexema != ')':
                 self.error_lexema(')')
 
+            self.pila_tipos.pop()
             self.add_line("OPR 0, 21" if new_line else "OPR 0, 20")
 
         self.next_token()
@@ -520,6 +557,7 @@ class Parser:
     @show_level
     def funcion(self):
         li = self.line_inc
+        args = []
         func = []
         func.append('F')
 
@@ -546,9 +584,10 @@ class Parser:
             arg_type = self.tipo_var[self.lexema]
             func_id += f"${arg_type}"
             argumento.append(arg_type)
-            argumento.append(1)
+            argumento.append(0)
             argumento.append(0)
 
+            args.append(id)
             self.mapa_simbolos[id] = argumento
             self.next_token()
             while self.lexema == ",":
@@ -571,11 +610,15 @@ class Parser:
                 argumento.append(0)
                 argumento.append(0)
 
+                args.append(id)
                 self.mapa_simbolos[id] = argumento
                 self.next_token()
 
         if self.lexema != ")":
             self.error_lexema(")")
+
+        for arg in args[::-1]:
+            self.add_line(f"STO 0, {arg}")
 
         self.next_token()
         if self.lexema == "-":
@@ -804,6 +847,11 @@ class Parser:
     # expr_-1
     @show_level
     def asignacion(self, id):
+        id_exist = True
+        if id not in self.mapa_simbolos:
+            self.error_semantico(f"El simbolo '{id}' no existe.")
+            id_exist = False
+
         if self.lexema == '[':
             self.next_token()
             self.expresion()
@@ -820,10 +868,15 @@ class Parser:
         self.expresion()
         self.add_line(f'STO 0, {id}')
 
+        if id_exist and self.mapa_simbolos[id][1] != self.pila_tipos.pop():
+            self.error_semantico("El tipo de la variable y resultado de la expresión no coinciden.")
+
+        if not id_exist:
+            self.pila_tipos.pop()
+
         if self.lexema != ';':
             self.error_lexema(";")
 
-    # TODO: Hacer analisis semantico de tipos
     @show_level
     def expresion(self):
         self.disyuncion()
@@ -836,6 +889,8 @@ class Parser:
         while self.lexema in ['||', 'o']:
             self.next_token()
             self.conjuncion()
+
+            self.check_types('||')
             self.add_line(f"OPR 0, 16")
 
     # expr_2
@@ -847,6 +902,8 @@ class Parser:
         while self.lexema in ['&&', 'y']:
             self.next_token()
             self.logico()
+
+            self.check_types('&&')
             self.add_line(f"OPR 0, 15")
 
     # expr_3
@@ -859,6 +916,8 @@ class Parser:
             temp = self.lexema
             self.next_token()
             self.adicion()
+
+            self.check_types(temp)
             self.add_line(f"OPR 0, {self.opr_num[temp]}")
 
     # expr_4
@@ -871,6 +930,8 @@ class Parser:
             temp = self.lexema
             self.next_token()
             self.producto()
+
+            self.check_types(temp)
             self.add_line(f"OPR 0, {self.opr_num[temp]}")
 
     # expr_5
@@ -883,6 +944,8 @@ class Parser:
             temp = self.lexema
             self.next_token()
             self.exponente()
+
+            self.check_types(temp)
             self.add_line(f"OPR 0, {self.opr_num[temp]}")
 
     # expr_6
@@ -894,6 +957,8 @@ class Parser:
         while self.lexema == '^':
             self.next_token()
             self.termino()
+
+            self.check_types('^')
             self.add_line(f"OPR 0, 7")
 
     # expr_7
@@ -946,14 +1011,20 @@ class Parser:
             if not is_fun:
                 if id not in self.mapa_simbolos:
                     self.error_semantico(f"La variable '{id}' no existe.")
+                    self.pila_tipos.append('I')
+
+                else:
+                    self.pila_tipos.append( self.mapa_simbolos[id][1] )
 
                 self.add_line(f'LOD {id}, 0')
 
         elif self.tipo in ['Entero', 'Decimal', 'Alfabetico']:
-            if unary:
+            if unary and self.tipo == 'Alfabetico':
                 self.error_semantico("Operador '-' en tipo incompatible.")
 
             self.add_line(f'LIT {self.lexema}, 0')
+            self.pila_tipos.append( self.tipo[0].capitalize() )
+            print("Pila Tipos:", self.pila_tipos)
             self.next_token()
 
         elif self.tipo == 'Logico':
@@ -962,6 +1033,7 @@ class Parser:
 
             temp = 'V' if self.lexema == 'verdadero' else 'F'
             self.add_line(f'LIT {temp}, 0')
+            self.pila_tipos.append( self.tipo[0].capitalize() )
             self.next_token()
 
         else:
@@ -969,12 +1041,3 @@ class Parser:
 
         if unary:
             self.add_line(f'OPR 0, {unary}')
-        
-
-if __name__ == '__main__':
-    from lexer import Lexer
-
-    text = 'fn principal() { sea mut x: entero; x = 2 + 2; }\n'
-    lexer = Lexer(text)
-    parser = Parser(lexer)
-    parser()

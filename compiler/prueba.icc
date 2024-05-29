@@ -1,7 +1,11 @@
-sea x : entero = 15;
+sea mut x : entero = 5;
+
+fn sucesor(a : entero, b : entero)
+{
+    imprimeln!(a+b);
+}
 
 fn principal()
 {
-    si x < 18 { imprimeln!("Eres menor de edad"); }
-    sino si x > 18 { imprimeln!("Eres menor de edad"); }
+    imprimeln!("Hola Mundo!");
 }
