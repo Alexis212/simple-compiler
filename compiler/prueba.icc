@@ -1,13 +1,14 @@
-sea mut x : entero;
-
-fn suma(a : entero, b : entero) -> entero
+fn foo(n : entero) -> entero
 {
-    regresa a + b;
+    si n == 1 { n = 10; }
+    sino
+    {
+        foo(1);
+        imprimeln!(n);
+    }
 }
 
 fn principal()
 {
-    x = suma(5, 2);
-    imprimeln!(x);
-    imprimeln!("Fin de principal");
+    foo(0);
 }

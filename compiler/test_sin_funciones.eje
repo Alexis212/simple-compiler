@@ -1,32 +1,31 @@
-MAX,C,E,0,0,#
-bPrimo,V,L,0,0,#
-fibo,V,E,0,0,#
-facto,V,E,0,0,#
-i,V,E,0,0,#
-j,V,E,0,0,#
-num,V,E,0,0,#
-tmp,V,E,0,0,#
-fiba,V,E,0,0,#
-nombre,V,A,0,0,#
-vec,V,E,10,0,#
-_RE0,I,I,70,0,#
-_RE2,I,I,92,0,#
-_RE1,I,I,92,0,#
-_RE4,I,I,99,0,#
-_RE3,I,I,99,0,#
-_RE5,I,I,116,0,#
-_RE9,I,I,159,0,#
-_RE8,I,I,159,0,#
-_RE7,I,I,164,0,#
-_RE6,I,I,169,0,#
-_RE10,I,I,189,0,#
-_RE12,I,I,203,0,#
-_RE11,I,I,203,0,#
-_RE14,I,I,220,0,#
-_RE13,I,I,222,0,#
-_principal,F,I,52,0,#
-$jmp,V,E,0,0,#
-_P,I,I,1,0,#
+MAX,C,E,0,0,#,
+bPrimo,V,L,0,0,#,
+fibo,V,E,0,0,#,
+facto,V,E,0,0,#,
+i,V,E,0,0,#,
+j,V,E,0,0,#,
+num,V,E,0,0,#,
+tmp,V,E,0,0,#,
+fiba,V,E,0,0,#,
+nombre,V,A,0,0,#,
+vec,V,E,10,0,#,
+_principal,F,I,52,0,#,
+_RE0,I,I,70,0,#,
+_RE2,I,I,92,0,#,
+_RE1,I,I,92,0,#,
+_RE4,I,I,99,0,#,
+_RE3,I,I,99,0,#,
+_RE5,I,I,116,0,#,
+_RE9,I,I,159,0,#,
+_RE8,I,I,159,0,#,
+_RE7,I,I,164,0,#,
+_RE6,I,I,169,0,#,
+_RE10,I,I,189,0,#,
+_RE12,I,I,203,0,#,
+_RE11,I,I,203,0,#,
+_RE14,I,I,218,0,#,
+_RE13,I,I,220,0,#,
+_P,I,I,1,0,#,
 @
 1 LIT 10, 0
 2 STO 0, MAX
@@ -237,25 +236,23 @@ _P,I,I,1,0,#
 207 LOD i, 0
 208 LOD num, 0
 209 OPR 0, 9
-210 LOD bPrimo, 0
-211 OPR 0, 15
-212 JMC V, 194
-213 LOD num, 0
-214 OPR 0, 20
-215 LOD bPrimo, 0
-216 JMC F, _RE14
-217 LIT " es primo", 0
-218 OPR 0, 21
-219 JMP 0, _RE13
-220 LIT " NO es primo", 0
-221 OPR 0, 21
-222 LIT "Dime tu nombre: ", 0
-223 OPR 0, 20
-224 OPR nombre, 19
-225 LIT "Felicidades ", 0
+210 JMC V, 194
+211 LOD num, 0
+212 OPR 0, 20
+213 LOD bPrimo, 0
+214 JMC F, _RE14
+215 LIT " es primo", 0
+216 OPR 0, 21
+217 JMP 0, _RE13
+218 LIT " NO es primo", 0
+219 OPR 0, 21
+220 LIT "Dime tu nombre: ", 0
+221 OPR 0, 20
+222 OPR nombre, 19
+223 LIT "Felicidades ", 0
+224 OPR 0, 20
+225 LOD nombre, 0
 226 OPR 0, 20
-227 LOD nombre, 0
-228 OPR 0, 20
-229 LIT "! Ya pasaste compiladores!", 0
-230 OPR 0, 21
-231 OPR 0, 0
+227 LIT "! Ya pasaste compiladores!", 0
+228 OPR 0, 21
+229 OPR 0, 0

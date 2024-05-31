@@ -1,9 +1,0 @@
-$jmp,V,E,0,0,#,
-_RE0,I,I,5,0,#,
-_P,I,I,1,0,#,
-@
-1 LOD _RE0, 0
-2 STO 0, $jmp
-3 LOD $jmp, 0
-4 OPR 0, 21
-5 OPR 0, 0

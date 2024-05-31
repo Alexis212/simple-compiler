@@ -1,9 +1,9 @@
 sea MAX : entero = 10;
+sea mut vec[MAX]:entero = [33, 1, 3, 4, 19, 88, 15, 2, 100, 10];
 sea mut bPrimo : logico = verdadero;
 sea mut fibo, facto : entero = 1;
 sea mut i, j, num, tmp, fiba : entero;
 sea mut nombre : alfabetico;
-sea mut vec[MAX]:entero = [33, 1, 3, 4, 19, 88, 15, 2, 100, 10];
 
 
 fn principal()
@@ -39,21 +39,21 @@ fn principal()
     // Bubble Sort
     para i en 0..MAX-1
     {
-            para j en i+1..MAX
+        para j en i+1..MAX
+        {
+            si vec[i] > vec[j]
             {
-                    si vec[i] > vec[j]
-                    {
-                            tmp = vec[i];
-                            vec[i] = vec[j];
-                            vec[j] = tmp;
-                    }
+                tmp = vec[i];
+                vec[i] = vec[j];
+                vec[j] = tmp;
             }
+        }
     }
 
     // Imprimir vector
     para i en 0..MAX
     {
-            imprimeln!("Vector[", i, "] = ", vec[i]);
+        imprimeln!("Vector[", i, "] = ", vec[i]);
     }
 
     // Numero Primo
@@ -66,7 +66,7 @@ fn principal()
         si (num % i == 0) { bPrimo = falso; }
         i = i+1;
     }
-    mientras i < num && bPrimo;
+    mientras i < num;
 
     imprimeln(num);
     si bPrimo { imprimeln!(" es primo"); }

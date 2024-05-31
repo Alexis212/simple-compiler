@@ -1,0 +1,301 @@
+MAX,C,E,0,0,#,
+vec,V,E,10,0,#,
+fibo,V,E,0,0,#,
+num,V,E,0,0,#,
+i,V,E,0,0,#,
+j,V,E,0,0,#,
+fiba,V,E,0,0,#,
+tmp,V,E,0,0,#,
+nombre,V,A,0,0,#,
+n$factorial$E,R,E,0,0,#,
+factorial$E,F,E,48,0,#,
+_RE1,I,I,57,0,#,
+_RE2,I,I,63,0,#,
+_RE0,I,I,67,0,#,
+imprimir_lista,F,I,68,0,#,
+_RE3,I,I,88,0,#,
+bubble_sort,F,I,96,0,#,
+_RE7,I,I,129,0,#,
+_RE6,I,I,129,0,#,
+_RE5,I,I,134,0,#,
+_RE4,I,I,139,0,#,
+n$esPrimo$E,R,E,0,0,#,
+esPrimo$E,F,L,140,0,#,
+_RE9,I,I,153,0,#,
+_RE8,I,I,153,0,#,
+n$fibonacci$E,R,E,0,0,#,
+fibonacci$E,F,E,165,0,#,
+_RE11,I,I,177,0,#,
+_RE10,I,I,177,0,#,
+_RE12,I,I,194,0,#,
+_principal,F,I,198,0,#,
+_RE13,I,I,210,0,#,
+_RE14,I,I,224,0,#,
+_RE15,I,I,230,0,#,
+_RE16,I,I,232,0,#,
+_RE17,I,I,236,0,#,
+_RE20,I,I,244,0,#,
+_RE19,I,I,249,0,#,
+_RE18,I,I,251,0,#,
+_P,I,I,1,0,#,
+@
+1 LIT 10, 0
+2 STO 0, MAX
+3 LIT 0, 0
+4 LIT 33, 0
+5 STO 0, vec
+6 LIT 1, 0
+7 LIT 1, 0
+8 STO 0, vec
+9 LIT 2, 0
+10 LIT 3, 0
+11 STO 0, vec
+12 LIT 3, 0
+13 LIT 4, 0
+14 STO 0, vec
+15 LIT 4, 0
+16 LIT 19, 0
+17 STO 0, vec
+18 LIT 5, 0
+19 LIT 88, 0
+20 STO 0, vec
+21 LIT 6, 0
+22 LIT 15, 0
+23 STO 0, vec
+24 LIT 7, 0
+25 LIT 2, 0
+26 STO 0, vec
+27 LIT 8, 0
+28 LIT 100, 0
+29 STO 0, vec
+30 LIT 9, 0
+31 LIT 10, 0
+32 STO 0, vec
+33 LIT 1, 0
+34 STO 0, fibo
+35 LIT 0, 0
+36 STO 0, num
+37 LIT 0, 0
+38 STO 0, i
+39 LIT 0, 0
+40 STO 0, j
+41 LIT 0, 0
+42 STO 0, fiba
+43 LIT 0, 0
+44 STO 0, tmp
+45 LIT "", 0
+46 STO 0, nombre
+47 JMP 0, _principal
+48 STO 0, n$factorial$E
+49 LOD n$factorial$E, 0
+50 LIT 1, 0
+51 OPR 0, 11
+52 JMC F, _RE1
+53 LOD n$factorial$E, 0
+54 STO 0, factorial$E
+55 OPR 0, 1
+56 JMP 0, _RE0
+57 LOD n$factorial$E, 0
+58 LOD _RE2, 0
+59 LOD n$factorial$E, 0
+60 LIT 1, 0
+61 OPR 0, 3
+62 CAL factorial$E, 0
+63 LOD factorial$E, 0
+64 OPR 0, 4
+65 STO 0, factorial$E
+66 OPR 0, 1
+67 OPR 0, 1
+68 LIT "[", 0
+69 OPR 0, 20
+70 LIT 0, 0
+71 STO 0, i
+72 LOD i, 0
+73 LOD MAX, 0
+74 LIT 1, 0
+75 OPR 0, 3
+76 OPR 0, 9
+77 JMC F, _RE3
+78 LOD i, 0
+79 LOD vec, 0
+80 OPR 0, 20
+81 LIT " ", 0
+82 OPR 0, 20
+83 LOD i, 0
+84 LIT 1, 0
+85 OPR 0, 2
+86 STO 0, i
+87 JMP 0, 72
+88 LOD MAX, 0
+89 LIT 1, 0
+90 OPR 0, 3
+91 LOD vec, 0
+92 OPR 0, 20
+93 LIT "]", 0
+94 OPR 0, 21
+95 OPR 0, 1
+96 LIT 0, 0
+97 STO 0, i
+98 LOD i, 0
+99 LOD MAX, 0
+100 LIT 1, 0
+101 OPR 0, 3
+102 OPR 0, 11
+103 JMC F, _RE4
+104 LOD i, 0
+105 LIT 1, 0
+106 OPR 0, 2
+107 STO 0, j
+108 LOD j, 0
+109 LOD MAX, 0
+110 OPR 0, 9
+111 JMC F, _RE5
+112 LOD i, 0
+113 LOD vec, 0
+114 LOD j, 0
+115 LOD vec, 0
+116 OPR 0, 10
+117 JMC F, _RE7
+118 LOD i, 0
+119 LOD vec, 0
+120 STO 0, tmp
+121 LOD i, 0
+122 LOD j, 0
+123 LOD vec, 0
+124 STO 0, vec
+125 LOD j, 0
+126 LOD tmp, 0
+127 STO 0, vec
+128 JMP 0, _RE6
+129 LOD j, 0
+130 LIT 1, 0
+131 OPR 0, 2
+132 STO 0, j
+133 JMP 0, 108
+134 LOD i, 0
+135 LIT 1, 0
+136 OPR 0, 2
+137 STO 0, i
+138 JMP 0, 98
+139 OPR 0, 1
+140 STO 0, n$esPrimo$E
+141 LIT 2, 0
+142 STO 0, i
+143 LOD n$esPrimo$E, 0
+144 LOD i, 0
+145 OPR 0, 6
+146 LIT 0, 0
+147 OPR 0, 14
+148 JMC F, _RE9
+149 LIT F, 0
+150 STO 0, esPrimo$E
+151 OPR 0, 1
+152 JMP 0, _RE8
+153 LOD i, 0
+154 LIT 1, 0
+155 OPR 0, 2
+156 STO 0, i
+157 LOD i, 0
+158 LOD n$esPrimo$E, 0
+159 OPR 0, 9
+160 JMC V, 143
+161 LIT V, 0
+162 STO 0, esPrimo$E
+163 OPR 0, 1
+164 OPR 0, 1
+165 STO 0, n$fibonacci$E
+166 LOD n$fibonacci$E, 0
+167 STO 0, i
+168 LIT 0, 0
+169 STO 0, fiba
+170 LOD n$fibonacci$E, 0
+171 LIT 1, 0
+172 OPR 0, 11
+173 JMC F, _RE11
+174 LOD n$fibonacci$E, 0
+175 STO 0, fibo
+176 JMP 0, _RE10
+177 LOD i, 0
+178 LIT 1, 0
+179 OPR 0, 10
+180 JMC F, _RE12
+181 LOD fibo, 0
+182 STO 0, tmp
+183 LOD fiba, 0
+184 LOD fibo, 0
+185 OPR 0, 2
+186 STO 0, fibo
+187 LOD tmp, 0
+188 STO 0, fiba
+189 LOD i, 0
+190 LIT 1, 0
+191 OPR 0, 3
+192 STO 0, i
+193 JMP 0, 177
+194 LOD fibo, 0
+195 STO 0, fibonacci$E
+196 OPR 0, 1
+197 OPR 0, 1
+198 LIT "Factorial. Dame un numero: ", 0
+199 OPR 0, 20
+200 OPR num, 19
+201 LIT "Factorial(", 0
+202 OPR 0, 20
+203 LOD num, 0
+204 OPR 0, 20
+205 LIT ") = ", 0
+206 OPR 0, 20
+207 LOD _RE13, 0
+208 LOD num, 0
+209 CAL factorial$E, 0
+210 LOD factorial$E, 0
+211 OPR 0, 21
+212 LIT "Fibonacci. Dame un numero: ", 0
+213 OPR 0, 20
+214 OPR num, 19
+215 LIT "Fibonacci(", 0
+216 OPR 0, 20
+217 LOD num, 0
+218 OPR 0, 20
+219 LIT ") = ", 0
+220 OPR 0, 20
+221 LOD _RE14, 0
+222 LOD num, 0
+223 CAL fibonacci$E, 0
+224 LOD fibonacci$E, 0
+225 OPR 0, 21
+226 LIT "Lista Desordenada: ", 0
+227 OPR 0, 20
+228 LOD _RE15, 0
+229 CAL imprimir_lista, 0
+230 LOD _RE16, 0
+231 CAL bubble_sort, 0
+232 LIT "Lista Ordenada: ", 0
+233 OPR 0, 20
+234 LOD _RE17, 0
+235 CAL imprimir_lista, 0
+236 LIT "Dame un numero: ", 0
+237 OPR 0, 20
+238 OPR num, 19
+239 LOD num, 0
+240 OPR 0, 20
+241 LOD _RE20, 0
+242 LOD num, 0
+243 CAL esPrimo$E, 0
+244 LOD esPrimo$E, 0
+245 JMC F, _RE19
+246 LIT " es primo", 0
+247 OPR 0, 21
+248 JMP 0, _RE18
+249 LIT " no es primo", 0
+250 OPR 0, 21
+251 LIT "Dime tu nombre: ", 0
+252 OPR 0, 20
+253 OPR nombre, 19
+254 LIT "Felicidades ", 0
+255 OPR 0, 20
+256 LOD nombre, 0
+257 OPR 0, 20
+258 LIT " pasaste compiladores con un 100!!!", 0
+259 OPR 0, 21
+260 OPR 0, 0

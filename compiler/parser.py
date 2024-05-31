@@ -265,11 +265,10 @@ class Parser:
 
             # Llamada de funcion
             if self.lexema == '(':
-                ide = f"_{ide}"
                 args_types = []
-                ri = self.reg_inc + 1
-                self.reg_inc += 1
+                ri = self.reg_inc
                 self.add_line(f"LOD _RE{ri}, 0")
+                self.reg_inc += 1
 
                 self.next_token()
                 if self.lexema != ')':
@@ -292,7 +291,7 @@ class Parser:
                     self.next_token()
 
                 if ide not in self.mapa_simbolos:
-                    self.error_semantico(f"La funcion llamada no existe.")
+                    self.error_semantico(f"La funcion {ide} no existe.")
 
                 elif self.mapa_simbolos[ide][0] != 'F':
                     self.error_semantico("El elemento llamado no es una funcion.")
@@ -661,19 +660,20 @@ class Parser:
         if self.lexema != "{":
             self.error_lexema("{")
 
+        func.append(li)
+        func.append(0)
+
+        if func_id == 'principal':
+            func_id = '_principal'
+        self.mapa_simbolos[func_id] = func
+
         self.bloque(func_id)
 
         if self.lexema != "}":
             self.error_lexema("}")
 
         else:
-            func.append(li)
-            func.append(0)
-
-            self.add_line("OPR 0, 0" if func_id == 'principal' else "OPR 0, 1")
-            if func_id == 'principal':
-                func_id = '_principal'
-            self.mapa_simbolos[func_id] = func
+            self.add_line("OPR 0, 0" if func_id == '_principal' else "OPR 0, 1")
 
     # TODO: Hacer que use sus propios simbolos (simbolos locales)
     @show_level
@@ -786,6 +786,8 @@ class Parser:
     def mientras(self, fun_id=""):
         ri = self.reg_inc
         li = self.line_inc
+        self.reg_inc += 1
+
         self.next_token()
         self.expresion()
 
@@ -799,7 +801,6 @@ class Parser:
 
             self.add_line(f"JMP 0, {li}")
             self.mapa_simbolos[f'_RE{ri}'] = ['I', 'I', self.line_inc, '0']
-            self.reg_inc += 1
             self.next_token()
 
         else:
@@ -810,11 +811,13 @@ class Parser:
     def si_sino(self, fun_id=""):
         ri = self.reg_inc
         self.reg_inc += 1
+        ri2 = self.reg_inc
+        self.reg_inc += 1
 
         # si
         self.next_token()
         self.expresion()
-        self.add_line(f"JMC F, _RE{self.reg_inc}")
+        self.add_line(f"JMC F, _RE{ri2}")
         if self.lexema == '{':
             self.bloque(fun_id)
 
@@ -827,7 +830,7 @@ class Parser:
             self.error_lexema('{')
 
         self.add_line(f"JMP 0, _RE{ri}")
-        self.mapa_simbolos[f"_RE{self.reg_inc}"] = ['I', 'I', self.line_inc, '0']
+        self.mapa_simbolos[f"_RE{ri2}"] = ['I', 'I', self.line_inc, '0']
 
         # NOTE: Esto es un parche
         exist_sino = True
@@ -870,12 +873,14 @@ class Parser:
                 self.error_lexema('{')
 
         self.mapa_simbolos[f"_RE{ri}"] = ['I', 'I', self.line_inc, '0']
-        self.reg_inc += 1
 
     # expr_-1
     @show_level
     def asignacion(self, id):
         id_exist = True
+        if f"{id}{self.contexto}" in self.mapa_simbolos:
+            id = f"{id}{self.contexto}"
+
         if id not in self.mapa_simbolos:
             self.error_semantico(f"El simbolo '{id}' no existe.")
             id_exist = False
@@ -1027,7 +1032,7 @@ class Parser:
 
             elif self.lexema == '(':
                 args_type = []
-                ri = self.reg_inc + 1
+                ri = self.reg_inc
                 self.add_line(f"LOD _RE{ri}, 0")
                 self.reg_inc += 1
 
@@ -1050,7 +1055,7 @@ class Parser:
                     self.next_token()
                     
                 if id not in self.mapa_simbolos:
-                    self.error_semantico(f"La funcion llamada no existe.")
+                    self.error_semantico(f"La funcion '{id}' no existe.")
 
                 elif self.mapa_simbolos[id][0] != 'F':
                     self.error_semantico("El elemento llamado no es una funcion.")
