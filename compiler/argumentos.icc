@@ -1,0 +1,15 @@
+fn sucesor(n : entero) -> entero
+{
+    regresa n + 1;
+}
+
+fn predecesor(n : entero) -> entero
+{
+    regresa n - 1;
+}
+
+fn principal()
+{
+    imprimeln!( sucesor(5) );
+    imprimeln!( predecesor(5) );
+}

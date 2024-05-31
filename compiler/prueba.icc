@@ -1,0 +1,14 @@
+fn foo(n : entero) -> entero
+{
+    si n == 1 { n = 10; }
+    sino
+    {
+        foo(1);
+        imprimeln!(n);
+    }
+}
+
+fn principal()
+{
+    foo(0);
+}

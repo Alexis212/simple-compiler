@@ -23,6 +23,7 @@ struct codigo {
 };
 codigo prgm[10000];
 iden tabsim[10000];
+bool bExe = false;
 int coni=0;
 int conp=0;
 const int ERR=-1;
@@ -114,10 +115,20 @@ void exec() {
     int pc = getIden( "_P" );
     if( pc >= 0 ) pc = tabsim[pc].di1;
     while ( pc >= 0 && pc <= conp ) {
-        /*cout << pc << " "
-             << prgm[pc].mnemo << " "
-             << prgm[pc].dir1 << ","
-             << prgm[pc].dir2 << endl; */
+        if (bExe) { //para Debug
+            if (pila.empty())
+                cout << "Pila T: #";
+            else
+                cout << "Pila T: " << pila.top();
+
+            cout << "\npc => " << pc << " "
+                 << prgm[pc].mnemo << " "
+                 << prgm[pc].dir1 << ","
+                 << prgm[pc].dir2 << endl;
+
+            getchar();
+        }
+
         if( prgm[pc].mnemo == "OPR") {
             if( prgm[pc].dir1 == "0" &&
                 prgm[pc].dir2 == "0") break;
@@ -156,11 +167,14 @@ void exec() {
             }
             else if( prgm[pc].dir1 == "0") {
                 int op = atoi( prgm[pc].dir2.c_str());
-                if( op > 1 && op < 8) {
+                if( op > 1 && op < 9) {  
                     double opd = strtod( pila.top().c_str(), 0 );
                     pila.pop();
-                    double opi = strtod( pila.top().c_str(), 0 );
-                    pila.pop();
+                    double opi;
+                    if (op != 8) {
+                       opi = strtod( pila.top().c_str(), 0 );
+                       pila.pop();
+                    }
                     double res;
                     ostringstream cnv;
                     switch( op ) {
@@ -176,7 +190,10 @@ void exec() {
                                break;
                        case 7: res = pow(opi, opd);
                                break;
+                       case 8: res = -opd;
+                               break;
                     }
+                    //cout << "res=" << res << endl;
                     cnv << setprecision(500) << res;
                     pila.push( cnv.str() );
                     //cout << pila << endl;
@@ -332,6 +349,8 @@ void exec() {
 }
 int main(int argc, char* argv[]) {
     if( argc > 1) {
+       if (argc > 2 && (tolower(argv[2][0]) == 'd')) bExe = true;
+       else bExe = false;
        leeArch( string(argv[1]) + ".eje" );
        for(int i=0; i < coni; i++)
           cout << tabsim[i].nom << ","

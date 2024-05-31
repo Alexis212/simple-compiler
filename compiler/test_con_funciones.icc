@@ -1,0 +1,104 @@
+sea MAX : entero = 10;
+sea mut vec[MAX] : entero = [33, 1, 3, 4, 19, 88, 15, 2, 100, 10];
+sea mut fibo : entero = 1;
+sea mut num, i, j, fiba, tmp : entero;
+sea mut nombre : alfabetico;
+
+
+fn factorial(n : entero) -> entero
+{
+    si n <= 1 { regresa n; }
+    sino { regresa n * factorial(n - 1); }
+}
+
+fn imprimir_lista()
+{
+    imprimeln("[");
+    para i en 0..MAX-1
+    {
+        imprimeln(vec[i], " ");
+    }
+    imprimeln!(vec[MAX-1], "]");
+}
+
+fn bubble_sort()
+{
+    // Ordenar vector
+    para i en 0..=MAX-1
+    {
+        para j en i+1..MAX
+        {
+            si vec[i] > vec[j]
+            {
+                tmp = vec[i];       
+                vec[i] = vec[j];
+                vec[j] = tmp;
+            }
+        }
+    }
+}
+
+fn esPrimo(n : entero) -> logico
+{
+    i = 2;
+    ciclo
+    {
+        si n % i == 0
+        {
+            regresa falso; 
+        }
+        i = i + 1;
+    } mientras i < n;
+
+    regresa verdadero;
+}
+
+fn fibonacci(n : entero) -> entero
+{
+    i = n;
+    fiba = 0;
+    si n <= 1 { fibo = n; }
+    mientras i > 1
+    {
+        tmp = fibo;
+        fibo = fiba + fibo;
+        fiba = tmp;
+
+        i = i - 1;
+    }
+
+    regresa fibo;
+}
+
+
+fn principal()
+{
+    // Factorial
+    imprimeln("Factorial. Dame un numero: ");
+    leer(num);
+    imprimeln!("Factorial(", num, ") = ", factorial(num));
+
+    // Fibonacci
+    imprimeln("Fibonacci. Dame un numero: ");
+    leer(num);
+    imprimeln!("Fibonacci(", num, ") = ", fibonacci(num));
+
+    // Ordenar lista
+    imprimeln("Lista Desordenada: ");
+    imprimir_lista();
+    bubble_sort();
+    imprimeln("Lista Ordenada: ");
+    imprimir_lista();
+
+    // Verificar Primo
+    imprimeln("Dame un numero: ");
+    leer(num);
+    imprimeln(num);
+    si esPrimo(num) { imprimeln!(" es primo"); }
+    sino { imprimeln!(" no es primo"); }
+
+    // Final
+    imprimeln("Dime tu nombre: ");
+    leer(nombre);
+    imprimeln!("Felicidades ", nombre, " pasaste compiladores con un 100!!!");
+}
