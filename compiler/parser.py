@@ -1,17 +1,6 @@
 """Analizador Sintactico."""
 
 
-def show_level(func):
-    """Print when the program enter and exit of the function."""
-    def inner_function(*args, **kwargs):
-        print(f"Enter {func.__name__}")
-        result = func(*args, **kwargs)
-        print(f"Exited {func.__name__}")
-        return result
-
-    return inner_function
-
-
 def tabla_tipos(a, b, opr):
     if a == 'E':
         if opr in '+-*^' and b in 'ED' :
@@ -100,11 +89,8 @@ class Parser:
             self.programa()
 
         except StopIteration:
-            # self.add_line("OPR 0, 0")
             self.mapa_simbolos['_P'] = ['I', 'I', 1, 0]
             print("Compilacion finalizada.")
-            print(self.mapa_simbolos)
-            print(self.codigo)
 
     def error_tipo(self, esperado):
         print(f"ERROR SINTACTICO: [{self.linea}:{self.columna}] '{self.lexema}'. Se esperaba un {esperado} y recibio un {self.tipo}.")
@@ -128,14 +114,10 @@ class Parser:
         if self.tipo == 'Comentario':
             self.next_token()
 
-        else:
-            print(f"[{self.tipo}:{self.lexema}]")
-
     def add_line(self, line):
         line = f"{self.line_inc} {line}\n"
         self.codigo.append(line)
         self.line_inc += 1
-        print(f":-{line}")
 
     def add_var(self, var, value):
         self.add_line(f"LIT {value}, 0")
@@ -168,7 +150,6 @@ class Parser:
                 f.writelines(self.codigo)
 
     # NOTE: Axioma
-    @show_level
     def programa(self):
         self.next_token()
         while self.lexema == 'sea':
@@ -181,7 +162,6 @@ class Parser:
             self.funcion()
             self.next_token()
 
-    @show_level
     def bloque(self, fun_id=""):
         self.next_token()
         while self.lexema in ['sea', 'si', 'para', 'mientras', 'tpm', 'leer',
@@ -189,7 +169,6 @@ class Parser:
               or self.tipo == 'Identificador':
             self.sentencia(fun_id)
 
-    @show_level
     def sentencia(self, fun_id=""):
         if self.lexema == 'si':
             self.si_sino(fun_id)
@@ -308,7 +287,6 @@ class Parser:
         #     self.error_tipo('Palabra Reservada')
         #     self.next_token()
 
-    @show_level
     def declaracion(self):
         sim = []
         ids = []
@@ -540,7 +518,6 @@ class Parser:
         if self.lexema != ';':
             self.error_lexema(';')
 
-    @show_level
     def imprime(self, new_line):
         self.next_token()
         if self.lexema != '(':
@@ -570,13 +547,11 @@ class Parser:
             self.error_lexema(';')
         self.next_token()
 
-    @show_level
     def tipo_variable(self):
         self.next_token()
         if self.lexema not in ['entero', 'decimal', 'logico', 'alfabetico']:
             self.error_tipo("Tipo")
 
-    @show_level
     def funcion(self):
         li = self.line_inc
         args = []
@@ -675,8 +650,6 @@ class Parser:
         else:
             self.add_line("OPR 0, 0" if func_id == '_principal' else "OPR 0, 1")
 
-    # TODO: Hacer que use sus propios simbolos (simbolos locales)
-    @show_level
     def para(self, fun_id):
         eq = False
         neg = False
@@ -756,7 +729,6 @@ class Parser:
             self.error_lexema('{')
 
     # Do - While
-    @show_level
     def ciclo(self, fun_id=""):
         li = self.line_inc
         self.next_token()
@@ -782,7 +754,6 @@ class Parser:
         self.add_line(f"JMC V, {li}")
         self.next_token()
 
-    @show_level
     def mientras(self, fun_id=""):
         ri = self.reg_inc
         li = self.line_inc
@@ -807,7 +778,6 @@ class Parser:
             # self.sentencia()
             self.error_lexema('{')
 
-    @show_level
     def si_sino(self, fun_id=""):
         ri = self.reg_inc
         self.reg_inc += 1
@@ -875,7 +845,6 @@ class Parser:
         self.mapa_simbolos[f"_RE{ri}"] = ['I', 'I', self.line_inc, '0']
 
     # expr_-1
-    @show_level
     def asignacion(self, id):
         id_exist = True
         if f"{id}{self.contexto}" in self.mapa_simbolos:
@@ -913,11 +882,11 @@ class Parser:
         if self.lexema != ';':
             self.error_lexema(";")
 
-    @show_level
+    # expr_0
     def expresion(self):
         self.disyuncion()
 
-    @show_level
+    # expr_1
     def disyuncion(self):
         """||."""
         self.conjuncion()
@@ -930,7 +899,6 @@ class Parser:
             self.add_line(f"OPR 0, 16")
 
     # expr_2
-    @show_level
     def conjuncion(self):
         """&&."""
         self.logico()
@@ -943,7 +911,6 @@ class Parser:
             self.add_line(f"OPR 0, 15")
 
     # expr_3
-    @show_level
     def logico(self):
         """<, >, ==, !=, <=, >=."""
         self.adicion()
@@ -957,7 +924,6 @@ class Parser:
             self.add_line(f"OPR 0, {self.opr_num[temp]}")
 
     # expr_4
-    @show_level
     def adicion(self):
         """+-."""
         self.producto()
@@ -971,7 +937,6 @@ class Parser:
             self.add_line(f"OPR 0, {self.opr_num[temp]}")
 
     # expr_5
-    @show_level
     def producto(self):
         """*/%."""
         self.exponente()
@@ -985,7 +950,6 @@ class Parser:
             self.add_line(f"OPR 0, {self.opr_num[temp]}")
 
     # expr_6
-    @show_level
     def exponente(self):
         """^."""
         self.termino()
@@ -999,7 +963,6 @@ class Parser:
 
     # expr_7
     # TODO: Mover prioridad de '!' justo despues de && y ||
-    @show_level
     def termino(self):
         unary = 0
         if self.lexema in ['-', '!', 'no']:
@@ -1083,7 +1046,6 @@ class Parser:
 
             self.add_line(f'LIT {self.lexema}, 0')
             self.pila_tipos.append( self.tipo[0].capitalize() )
-            print("Pila Tipos:", self.pila_tipos)
             self.next_token()
 
         elif self.tipo == 'Logico':

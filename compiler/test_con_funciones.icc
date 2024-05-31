@@ -91,7 +91,7 @@ fn principal()
     imprimir_lista();
 
     // Verificar Primo
-    imprimeln("Dame un numero: ");
+    imprimeln("Primo. Dame un numero: ");
     leer(num);
     imprimeln(num);
     si esPrimo(num) { imprimeln!(" es primo"); }

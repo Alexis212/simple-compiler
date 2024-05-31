@@ -9,7 +9,7 @@ sea mut nombre : alfabetico;
 fn principal()
 {
     // Factorial
-    imprimeln("Dame un numero: ");
+    imprimeln("Factorial. Dame un numero: ");
     leer(num);
 
     para i en 1..=num
@@ -19,7 +19,7 @@ fn principal()
     imprimeln!("Factorial(", i-1, ") = ", facto);
 
     // Fibonacci
-    imprimeln("Dame un numero: ");
+    imprimeln("Fibonacci. Dame un numero: ");
     leer(num);
 
     i = num;
@@ -37,6 +37,14 @@ fn principal()
     imprimeln!("Fibonacci", "(", num, ") = ", fibo);
 
     // Bubble Sort
+    // Imprimir vector desordenado
+    imprimeln("[");
+    para i en 0..MAX-1
+    {
+        imprimeln(vec[i], " ");
+    }
+    imprimeln!(vec[MAX-1], "]");
+
     para i en 0..MAX-1
     {
         para j en i+1..MAX
@@ -50,14 +58,16 @@ fn principal()
         }
     }
 
-    // Imprimir vector
-    para i en 0..MAX
+    // Imprimir vector ordenado
+    imprimeln("[");
+    para i en 0..MAX-1
     {
-        imprimeln!("Vector[", i, "] = ", vec[i]);
+        imprimeln(vec[i], " ");
     }
+    imprimeln!(vec[MAX-1], "]");
 
     // Numero Primo
-    imprimeln("Dame un numero: ");
+    imprimeln("Primo. Dame un numero: ");
     leer(num);
 
     i = 2;

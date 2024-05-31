@@ -274,7 +274,7 @@ _P,I,I,1,0,#,
 233 OPR 0, 20
 234 LOD _RE17, 0
 235 CAL imprimir_lista, 0
-236 LIT "Dame un numero: ", 0
+236 LIT "Primo. Dame un numero: ", 0
 237 OPR 0, 20
 238 OPR num, 19
 239 LOD num, 0

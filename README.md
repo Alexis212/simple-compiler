@@ -1,10 +1,12 @@
 # Simple Compiler
-A repository for my compiler project for the university
+A repository for my compiler project for the university.
 
 ## Oxido
 For this project I going to do a implementation of a simple language with spanish keywords based on Rust.
 
 ### Main Stanges
+_Este es mi hijo amado, en quien me he complacido._
+
 - [X] Lexer Analizer
     - [x] Todos los tipos de token
     - [x] Manejo de archivos
@@ -17,12 +19,12 @@ For this project I going to do a implementation of a simple language with spanis
     - [x] Declaracion de vectores
     - [x] Expresiones Matematicas y Logicas
 
-- [-] Semantic Analizer
+- [ ] Semantic Analizer
     - [x] Verificacion de tipos
     - [x] Verificacion de existencia de variables
     - [x] Diferenciacion de argumentos por funcion
-    - [-] Verificacion de longitud de arreglos
-    - [-] Verificacion de salida de funciones
+    - [ ] Verificacion de longitud de arreglos
+    - [ ] Verificacion de salida de funciones
     - [ ] Verificacion de tipos de argumentos
 
 ### Specific Goals
