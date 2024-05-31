@@ -1,19 +1,32 @@
 x,V,E,0,0,#
 a,R,E,0,0,#
 b,R,E,0,0,#
-_sucesor$E$E,F,I,4,0,#
-_principal,F,I,10,0,#
+_suma$E$E,F,E,4,0,#
+_RE0,I,I,18,0,#
+_principal,F,I,14,0,#
+$jmp,V,E,0,0,#
 _P,I,I,1,0,#
 @
-1 LIT 5, 0
+1 LIT 0, 0
 2 STO 0, x
 3 JMP 0, _principal
 4 STO 0, b
 5 STO 0, a
-6 LOD a, 0
-7 LOD b, 0
-8 OPR 0, 2
-9 OPR 0, 21
-10 LIT "Hola Mundo!", 0
-11 OPR 0, 21
-12 OPR 0, 0
+6 STO 0, $jmp
+7 LOD a, 0
+8 LOD b, 0
+9 OPR 0, 2
+10 LOD $jmp, 0
+11 OPR 0, 1
+12 LOD $jmp, 0
+13 OPR 0, 1
+14 LOD _RE0, 0
+15 LIT 5, 0
+16 LIT 2, 0
+17 CAL _suma$E$E, 0
+18 STO 0, x
+19 LOD x, 0
+20 OPR 0, 21
+21 LIT "Fin de principal", 0
+22 OPR 0, 21
+23 OPR 0, 0

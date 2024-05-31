@@ -79,8 +79,9 @@ class Parser:
                         '<=': 11, '>=': 12, '!=': 13, '==': 14, '&&': 15, '||': 16}
 
         self.pila_tipos = []
-
         self.error_count = 0
+
+        self.contexto = ""
 
         self.tipo = ''
         self.lexema = ''
@@ -99,8 +100,8 @@ class Parser:
             self.programa()
 
         except StopIteration:
-            self.add_line("OPR 0, 0")
-            self.mapa_simbolos['_P'] = ['I', 'I', '1', '0']
+            # self.add_line("OPR 0, 0")
+            self.mapa_simbolos['_P'] = ['I', 'I', 1, 0]
             print("Compilacion finalizada.")
             print(self.mapa_simbolos)
             print(self.codigo)
@@ -153,7 +154,7 @@ class Parser:
         lines = []
         for x, y in self.mapa_simbolos.items():
             line = ','.join(str(x) for x in y)
-            lines.append(f"{x},{line},#\n")
+            lines.append(f"{x},{line},#,\n")
         return lines
 
     def make_file(self, name='out'):
@@ -181,34 +182,37 @@ class Parser:
             self.next_token()
 
     @show_level
-    def bloque(self):
+    def bloque(self, fun_id=""):
         self.next_token()
         while self.lexema in ['sea', 'si', 'para', 'mientras', 'tpm', 'leer',
                               'imprimeln', 'imprimeln!', 'regresa', 'ciclo'] \
               or self.tipo == 'Identificador':
-            self.sentencia()
+            self.sentencia(fun_id)
 
     @show_level
-    def sentencia(self):
+    def sentencia(self, fun_id=""):
         if self.lexema == 'si':
-            self.si_sino()
+            self.si_sino(fun_id)
 
         if self.lexema == 'sino':
             self.error_personalizado("SINTACTICO", "'sino' sin un bloque 'si' asociado.")
 
         if self.lexema == 'mientras':
-            self.mientras()
+            self.mientras(fun_id)
 
         if self.lexema == 'para':
-            self.para()
+            self.para(fun_id)
 
         if self.lexema == 'ciclo':
-            self.ciclo()
+            self.ciclo(fun_id)
 
         if self.lexema == 'regresa':
             self.next_token()
             if self.lexema != ';':
                 self.expresion()
+
+                self.add_line(f"STO 0, {fun_id}")
+                self.add_line("OPR 0, 1")
 
                 if self.lexema != ';':
                     self.error_lexema(';')
@@ -252,31 +256,50 @@ class Parser:
             self.next_token()
              
         if self.tipo == 'Identificador':
-            temp = self.lexema
+            ide = self.lexema
             self.next_token()
 
+
             if self.lexema == '=' or self.lexema == '[':
-                self.asignacion(temp)
+                self.asignacion(ide)
 
             # Llamada de funcion
-            # FIXME: Agregar expresiones
             if self.lexema == '(':
+                ide = f"_{ide}"
+                args_types = []
+                ri = self.reg_inc + 1
+                self.reg_inc += 1
+                self.add_line(f"LOD _RE{ri}, 0")
+
                 self.next_token()
-                if self.tipo in ["Entero", "Decimal", "Logico", "Alfabetico", "Identificador"]:
+                if self.lexema != ')':
+                    self.expresion()
+                    args_types.append( self.pila_tipos[-1] )
+                    ide += f"${self.pila_tipos[-1]}"
+
+                    while self.lexema == ',':
+                        self.next_token()
+                        self.expresion()
+                        args_types.append( self.pila_tipos[-1] )
+                        ide += f"${self.pila_tipos[-1]}"
+
+                    if self.lexema != ')':
+                        self.error_lexema(')')
+
                     self.next_token()
 
-                    while self.lexema == ",":
-                        self.next_token()
+                else:
+                    self.next_token()
 
-                        if self.tipo not in ["Entero", "Decimal", "Logico", "Alfabetico", "Identificador"]:
-                            self.error_tipo("literal o identificador")
+                if ide not in self.mapa_simbolos:
+                    self.error_semantico(f"La funcion llamada no existe.")
 
-                        self.next_token()
+                elif self.mapa_simbolos[ide][0] != 'F':
+                    self.error_semantico("El elemento llamado no es una funcion.")
 
-                if self.lexema != ")":
-                   self.error_lexema(")")
+                self.add_line(f'CAL {ide}, 0')
+                self.mapa_simbolos[f'_RE{ri}'] = ['I', 'I', self.line_inc, '0']
 
-                self.next_token()
                 if self.lexema != ";":
                    self.error_lexema(";")
 
@@ -587,8 +610,8 @@ class Parser:
             argumento.append(0)
             argumento.append(0)
 
-            args.append(id)
-            self.mapa_simbolos[id] = argumento
+            args.append((id, argumento))
+
             self.next_token()
             while self.lexema == ",":
                 argumento = []
@@ -596,7 +619,7 @@ class Parser:
 
                 self.next_token()
                 if self.tipo != "Identificador":
-                    self.error_lexema("self.tipo")
+                    self.error_lexema("Identificador")
 
                 id = self.lexema
                 self.next_token()
@@ -610,15 +633,17 @@ class Parser:
                 argumento.append(0)
                 argumento.append(0)
 
-                args.append(id)
-                self.mapa_simbolos[id] = argumento
+                args.append((id, argumento))
                 self.next_token()
 
         if self.lexema != ")":
             self.error_lexema(")")
 
-        for arg in args[::-1]:
-            self.add_line(f"STO 0, {arg}")
+        self.contexto = f"${func_id}"
+        for lexema, tabla in args[::-1]:
+            lexema += f"${func_id}"
+            self.add_line(f"STO 0, {lexema}")
+            self.mapa_simbolos[lexema] = tabla
 
         self.next_token()
         if self.lexema == "-":
@@ -636,7 +661,7 @@ class Parser:
         if self.lexema != "{":
             self.error_lexema("{")
 
-        self.bloque()
+        self.bloque(func_id)
 
         if self.lexema != "}":
             self.error_lexema("}")
@@ -644,12 +669,15 @@ class Parser:
         else:
             func.append(li)
             func.append(0)
-            func_id = '_' + func_id
+
+            self.add_line("OPR 0, 0" if func_id == 'principal' else "OPR 0, 1")
+            if func_id == 'principal':
+                func_id = '_principal'
             self.mapa_simbolos[func_id] = func
 
     # TODO: Hacer que use sus propios simbolos (simbolos locales)
     @show_level
-    def para(self):
+    def para(self, fun_id):
         eq = False
         neg = False
         inc = 1
@@ -710,7 +738,7 @@ class Parser:
         self.add_line(f"JMC F, _RE{ri}")
 
         if self.lexema == '{':
-            self.bloque()
+            self.bloque(fun_id)
 
             if self.lexema != '}':
                 self.error_lexema('}')
@@ -729,11 +757,11 @@ class Parser:
 
     # Do - While
     @show_level
-    def ciclo(self):
+    def ciclo(self, fun_id=""):
         li = self.line_inc
         self.next_token()
         if self.lexema == '{':
-            self.bloque()
+            self.bloque(fun_id)
 
             if self.lexema != '}':
                 self.error_lexema('}')
@@ -755,7 +783,7 @@ class Parser:
         self.next_token()
 
     @show_level
-    def mientras(self):
+    def mientras(self, fun_id=""):
         ri = self.reg_inc
         li = self.line_inc
         self.next_token()
@@ -764,7 +792,7 @@ class Parser:
         self.add_line(f"JMC F, _RE{ri}")
 
         if self.lexema == '{':
-            self.bloque()
+            self.bloque(fun_id)
 
             if self.lexema != '}':
                 self.error_lexema('}')
@@ -779,7 +807,7 @@ class Parser:
             self.error_lexema('{')
 
     @show_level
-    def si_sino(self):
+    def si_sino(self, fun_id=""):
         ri = self.reg_inc
         self.reg_inc += 1
 
@@ -788,7 +816,7 @@ class Parser:
         self.expresion()
         self.add_line(f"JMC F, _RE{self.reg_inc}")
         if self.lexema == '{':
-            self.bloque()
+            self.bloque(fun_id)
 
             if self.lexema != '}':
                 self.error_lexema('}')
@@ -812,7 +840,7 @@ class Parser:
                 self.expresion()
                 self.add_line(f"JMC F, _RE{self.reg_inc}")
                 if self.lexema == '{':
-                    self.bloque()
+                    self.bloque(fun_id)
     
                     if self.lexema != '}':
                         self.error_lexema('}')
@@ -831,7 +859,7 @@ class Parser:
 
             # sino
             if self.lexema == '{':
-                self.bloque()
+                self.bloque(fun_id)
 
                 if self.lexema != '}':
                     self.error_lexema('}')
@@ -851,6 +879,9 @@ class Parser:
         if id not in self.mapa_simbolos:
             self.error_semantico(f"El simbolo '{id}' no existe.")
             id_exist = False
+
+        if id_exist and self.mapa_simbolos[id][0] == 'C':
+            self.error_semantico(f"Intetando redefinir la constante '{id}'.")
 
         if self.lexema == '[':
             self.next_token()
@@ -995,22 +1026,45 @@ class Parser:
                     self.next_token()
 
             elif self.lexema == '(':
+                args_type = []
+                ri = self.reg_inc + 1
+                self.add_line(f"LOD _RE{ri}, 0")
+                self.reg_inc += 1
+
                 is_fun = True
                 self.next_token()
                 self.expresion()
+                args_type.append( self.pila_tipos[-1] )
+                id += f"${self.pila_tipos[-1]}"
 
                 while self.lexema == ',':
+                    self.next_token()
                     self.expresion()
+                    args_type.append( self.pila_tipos[-1] )
+                    id += f"${self.pila_tipos[-1]}"
 
                 if self.lexema != ')':
                     self.error_lexema(')')
 
                 else:
                     self.next_token()
+                    
+                if id not in self.mapa_simbolos:
+                    self.error_semantico(f"La funcion llamada no existe.")
+
+                elif self.mapa_simbolos[id][0] != 'F':
+                    self.error_semantico("El elemento llamado no es una funcion.")
+
+                self.add_line(f"CAL {id}, 0")
+                self.mapa_simbolos[f'_RE{ri}'] = ['I', 'I', self.line_inc, '0']
+                self.add_line(f"LOD {id}, 0")
 
             if not is_fun:
+                if f"{id}{self.contexto}" in self.mapa_simbolos:
+                    id = f"{id}{self.contexto}"
+
                 if id not in self.mapa_simbolos:
-                    self.error_semantico(f"La variable '{id}' no existe.")
+                    self.error_semantico(f"La variable '{id.split('$')[0]}' no existe.")
                     self.pila_tipos.append('I')
 
                 else:

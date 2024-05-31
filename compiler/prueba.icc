@@ -1,11 +1,13 @@
-sea mut x : entero = 5;
+sea mut x : entero;
 
-fn sucesor(a : entero, b : entero)
+fn suma(a : entero, b : entero) -> entero
 {
-    imprimeln!(a+b);
+    regresa a + b;
 }
 
 fn principal()
 {
-    imprimeln!("Hola Mundo!");
+    x = suma(5, 2);
+    imprimeln!(x);
+    imprimeln!("Fin de principal");
 }
